@@ -40,7 +40,6 @@ const cases: { name: string; args: string[]; expect: (dir: string) => void }[] =
       const api = JSON.parse(readFileSync(join(dir, "apps/api/package.json"), "utf8"));
       assert.equal(api.name, "@demo-app/api");
       assert.ok(existsSync(join(dir, ".github/workflows/code-review.yml")));
-      assert.ok(!existsSync(join(dir, ".github/workflows/ci.yml")));
       assert.match(readFileSync(join(dir, "pnpm-workspace.yaml"), "utf8"), /fastify/);
     },
   },

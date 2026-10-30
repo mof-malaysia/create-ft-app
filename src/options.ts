@@ -27,10 +27,18 @@ export const DEFAULTS = {
   stack: "node",
   database: "postgres",
   versions: "tested",
+  docker: true,
+  git: true,
+  codeReview: false,
+  install: true,
 } as const satisfies {
   stack: Stack;
   database: Database;
   versions: VersionMode;
+  docker: boolean;
+  git: boolean;
+  codeReview: boolean;
+  install: boolean;
 };
 
 export type Options = {
@@ -71,7 +79,10 @@ export function flagsFor(o: Options): Flags {
   };
 }
 
-/** kebab-case: starts with a letter, lowercase words joined by single dashes. */
+/**
+ * kebab-case: starts with a letter, lowercase words joined by single dashes.
+ * Stricter than SCOPE below, so the default scope "@" + name is always valid.
+ */
 const NAME = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
 /** "Budget_Portal v2" → "budget-portal-v2", for suggesting a valid name. */
@@ -92,9 +103,9 @@ export function validateName(name: string | undefined): string | undefined {
   }`;
 }
 
-/** The default npm scope: the project name, so packages are "@<name>/api". */
-export const defaultScope = (name: string) => `@${name}`;
+/** Any valid npm scope, for an explicit --scope such as "@mof-malaysia". */
+const SCOPE = /^@[a-z0-9][a-z0-9._-]*$/;
 
 export function validateScope(scope: string): string | undefined {
-  return /^@[a-z0-9][a-z0-9._-]*$/.test(scope) ? undefined : 'The scope must look like "@my-app"';
+  return SCOPE.test(scope) ? undefined : 'The scope must look like "@my-app"';
 }

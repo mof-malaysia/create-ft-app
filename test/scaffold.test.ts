@@ -63,7 +63,6 @@ describe("every combination renders cleanly", () => {
         assert.equal(byPath.has("Dockerfile"), parts.includes("api") || parts.includes("web"));
         assert.equal(byPath.has("nginx.conf"), parts.includes("web") && !parts.includes("api"));
         assert.ok(byPath.has(".github/workflows/code-review.yml"));
-        assert.ok(![...byPath.keys()].some((p) => p.endsWith("/ci.yml")), "no CI workflow");
       });
     }
 });

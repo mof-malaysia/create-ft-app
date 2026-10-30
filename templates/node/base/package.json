@@ -9,6 +9,7 @@
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
+    "check": "turbo run lint check-types test",
     "verify": "turbo run lint check-types test build",
     // @if git
     "prepare": "lefthook install || echo \"Skipped git hooks: no git repository\"",

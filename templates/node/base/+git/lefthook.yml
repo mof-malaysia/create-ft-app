@@ -1,14 +1,14 @@
-# Installed by `pnpm install` (the root "prepare" script). This is the
-# project's only gate: there is no CI workflow, so every commit is formatted,
-# linted, type-checked and tested here first.
+# Installed by `pnpm install` (the root "prepare" script).
 pre-commit:
   piped: true
   jobs:
     - name: format
       glob: "*.{ts,tsx,js,mjs,cjs,json,jsonc,md,css,yml,yaml}"
-      # Calls the binaries directly: no pnpm startup, and no pnpm version check.
+      # Calls the binary directly: no pnpm startup, and no pnpm version check.
       run: node_modules/.bin/oxfmt --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
-    - name: lint, check-types, test
-      # Turbo caches results, so packages the commit didn't touch are instant.
-      run: node_modules/.bin/turbo run lint check-types test --output-logs=errors-only
+    - name: check
+      # Skips commits that only touch docs or styles. Turbo's cache skips
+      # unchanged packages (it hashes the working tree, not just what's staged).
+      glob: "*.{ts,tsx,js,mjs,cjs,json,jsonc,yaml}"
+      run: pnpm run check --output-logs=errors-only

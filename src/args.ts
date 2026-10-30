@@ -11,6 +11,8 @@ import {
   type VersionMode,
 } from "./options.ts";
 
+const onOff = (on: boolean) => (on ? "on" : "off");
+
 export const HELP = `create-ft-app [dir] [options]
 
 Scaffold a Turborepo project with the team's Node and SPA stack.
@@ -23,10 +25,10 @@ Options
   --scope <@scope>       npm scope for workspace packages (default: @<name>)
   --versions <mode>      ${VERSION_MODES.join(" or ")} (default: ${DEFAULTS.versions})
   --latest               Same as --versions latest
-  --[no-]docker          Dockerfile (default: on)
-  --[no-]code-review     fiscal-cr code review on pull requests (default: off)
-  --[no-]git             git init, hooks and a first commit (default: on)
-  --[no-]install         Install, add FTDS, format and verify (default: on)
+  --[no-]docker          Dockerfile (default: ${onOff(DEFAULTS.docker)})
+  --[no-]code-review     fiscal-cr code review on pull requests (default: ${onOff(DEFAULTS.codeReview)})
+  --[no-]git             git init, pre-commit checks and a first commit (default: ${onOff(DEFAULTS.git)})
+  --[no-]install         Install, add FTDS, format and verify (default: ${onOff(DEFAULTS.install)})
   -y, --yes              Accept defaults for anything not given as a flag
   -h, --help             Show this help
   -v, --version          Show the CLI version

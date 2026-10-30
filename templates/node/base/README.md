@@ -39,7 +39,8 @@ pnpm dev
 | `pnpm check-types` | TypeScript, no emit |
 | `pnpm test` | Rstest |
 | `pnpm format` | oxfmt |
-| `pnpm verify` | Lint, type check, test and build |
+| `pnpm check` | Lint, type check and test: what the pre-commit hook runs |
+| `pnpm verify` | `check` plus build |
 <!-- @if api -->
 
 ## Configuration
@@ -63,7 +64,7 @@ The api reads environment variables, validated in `apps/api/src/env.ts`:
 
 ## Checks
 
-There is no CI workflow. A pre-commit hook (lefthook, installed by `pnpm install`) formats staged files with oxfmt, then runs lint, type checks and tests through Turborepo; a failure stops the commit.
+A pre-commit hook (lefthook, installed by `pnpm install`) formats staged files with oxfmt, then runs `pnpm check` (lint, type checks and tests through Turborepo). A failure stops the commit.
 <!-- @endif -->
 <!-- @if codeReview -->
 

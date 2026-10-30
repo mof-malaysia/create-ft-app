@@ -8,7 +8,6 @@ import {
   DEFAULTS,
   PART_HINTS,
   PARTS,
-  defaultScope,
   flagsFor,
   toKebabCase,
   validateName,
@@ -51,21 +50,19 @@ const isEmptyDir = (dir: string) =>
 
 async function gather(args: Args, interactive: boolean): Promise<Options> {
   let name = args.name ?? (args.dir ? basename(resolve(args.dir)) : undefined);
-  const invalid = name !== undefined && validateName(name) !== undefined;
-  if (!name || (interactive && ((!args.name && !args.dir) || invalid))) {
-    if (!interactive) throw new Error("Pass a folder or --name");
+  if (!name && !interactive) throw new Error("Pass a folder or --name");
+  if (interactive && validateName(name))
     name = unwrap(
       await p.text({
-        message: invalid ? `"${name}" isn't kebab-case. Project name` : "Project name",
+        message: name ? `Project name ("${name}" isn't kebab-case)` : "Project name",
         placeholder: "my-app",
         // Offer the kebab-case version of a folder name that doesn't fit.
-        initialValue: invalid ? toKebabCase(name!) : undefined,
+        initialValue: name ? toKebabCase(name) : undefined,
         validate: validateName,
       }),
     );
-  }
   const nameError = validateName(name);
-  if (nameError) throw new Error(`${nameError}: "${name}"`);
+  if (nameError || !name) throw new Error(`${nameError}: "${name}"`);
 
   let dir = args.dir;
   if (!dir && interactive)
@@ -128,36 +125,23 @@ async function gather(args: Args, interactive: boolean): Promise<Options> {
       : DEFAULTS.database);
 
   type Extra = "docker" | "codeReview" | "git" | "install";
-  const extraInfo: Record<Extra, { label: string; hint: string; on: boolean }> = {
-    docker: { label: "Dockerfile", hint: "one image for the app", on: true },
-    git: {
-      label: "git",
-      hint: "init, pre-commit format/lint/type-check/test, first commit",
-      on: true,
-    },
+  const extraInfo: Record<Extra, { label: string; hint: string }> = {
+    docker: { label: "Dockerfile", hint: "one image for the app" },
+    git: { label: "git", hint: "init, pre-commit format/lint/type-check/test, first commit" },
     codeReview: {
       label: "Code review",
       hint: "fiscal-cr on pull requests; needs the org's ANTHROPIC_* variables",
-      on: false,
     },
-    install: {
-      label: "Install and verify",
-      hint: "pnpm install, FTDS, format, build",
-      on: true,
-    },
+    install: { label: "Install and verify", hint: "pnpm install, FTDS, format, build" },
   };
   const unasked = (Object.keys(extraInfo) as Extra[]).filter((k) => args[k] === undefined);
-  const byDefault = unasked.filter((k) => extraInfo[k].on);
+  const byDefault = unasked.filter((k) => DEFAULTS[k]);
   const picked: Extra[] =
     interactive && unasked.length
       ? unwrap(
           await p.multiselect<Extra>({
             message: "Extras",
-            options: unasked.map((k) => ({
-              value: k,
-              label: extraInfo[k].label,
-              hint: extraInfo[k].hint,
-            })),
+            options: unasked.map((k) => ({ value: k, ...extraInfo[k] })),
             initialValues: byDefault,
             required: false,
           }),
@@ -188,8 +172,9 @@ async function gather(args: Args, interactive: boolean): Promise<Options> {
         )
       : DEFAULTS.versions);
 
-  const scope = args.scope ?? defaultScope(name);
-  const scopeError = validateScope(scope);
+  // The default "@" + name is always valid; only an explicit --scope is checked.
+  const scope = args.scope ?? `@${name}`;
+  const scopeError = args.scope && validateScope(args.scope);
   if (scopeError) throw new Error(scopeError);
 
   return {

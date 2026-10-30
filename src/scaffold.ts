@@ -23,7 +23,7 @@ function templateVars(o: Options, t: Toolchain, cliVersion: string) {
     name: o.name,
     scope: o.scope,
     title: o.name
-      .split(/[-_.]/)
+      .split("-")
       .filter(Boolean)
       .map((w) => w[0]!.toUpperCase() + w.slice(1))
       .join(" "),

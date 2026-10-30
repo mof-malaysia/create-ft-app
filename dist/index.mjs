@@ -1523,7 +1523,11 @@ var VERSION_MODES = ["tested", "latest"];
 var DEFAULTS = {
   stack: "node",
   database: "postgres",
-  versions: "tested"
+  versions: "tested",
+  docker: true,
+  git: true,
+  codeReview: false,
+  install: true
 };
 function flagsFor(o) {
   const has = (p) => o.parts.includes(p);
@@ -1551,12 +1555,13 @@ function validateName(name) {
   const suggestion = toKebabCase(name);
   return `Use kebab-case: lowercase words joined by dashes, starting with a letter${suggestion ? ` (try "${suggestion}")` : ""}`;
 }
-var defaultScope = (name) => `@${name}`;
+var SCOPE = /^@[a-z0-9][a-z0-9._-]*$/;
 function validateScope(scope) {
-  return /^@[a-z0-9][a-z0-9._-]*$/.test(scope) ? void 0 : 'The scope must look like "@my-app"';
+  return SCOPE.test(scope) ? void 0 : 'The scope must look like "@my-app"';
 }
 
 // src/args.ts
+var onOff = (on) => on ? "on" : "off";
 var HELP = `create-ft-app [dir] [options]
 
 Scaffold a Turborepo project with the team's Node and SPA stack.
@@ -1569,10 +1574,10 @@ Options
   --scope <@scope>       npm scope for workspace packages (default: @<name>)
   --versions <mode>      ${VERSION_MODES.join(" or ")} (default: ${DEFAULTS.versions})
   --latest               Same as --versions latest
-  --[no-]docker          Dockerfile (default: on)
-  --[no-]code-review     fiscal-cr code review on pull requests (default: off)
-  --[no-]git             git init, hooks and a first commit (default: on)
-  --[no-]install         Install, add FTDS, format and verify (default: on)
+  --[no-]docker          Dockerfile (default: ${onOff(DEFAULTS.docker)})
+  --[no-]code-review     fiscal-cr code review on pull requests (default: ${onOff(DEFAULTS.codeReview)})
+  --[no-]git             git init, pre-commit checks and a first commit (default: ${onOff(DEFAULTS.git)})
+  --[no-]install         Install, add FTDS, format and verify (default: ${onOff(DEFAULTS.install)})
   -y, --yes              Accept defaults for anything not given as a flag
   -h, --help             Show this help
   -v, --version          Show the CLI version
@@ -1843,7 +1848,7 @@ function templateVars(o, t2, cliVersion) {
   return {
     name: o.name,
     scope: o.scope,
-    title: o.name.split(/[-_.]/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(" "),
+    title: o.name.split("-").filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(" "),
     nodeMajor: t2.node,
     pnpmVersion: t2.pnpm,
     ftdsVersion: t2.ftds,
@@ -2018,21 +2023,19 @@ function display(dir) {
 var isEmptyDir = (dir) => !existsSync(dir) || readdirSync2(dir).every((f) => f === ".git" || f === ".DS_Store");
 async function gather(args, interactive) {
   let name = args.name ?? (args.dir ? basename2(resolve(args.dir)) : void 0);
-  const invalid = name !== void 0 && validateName(name) !== void 0;
-  if (!name || interactive && (!args.name && !args.dir || invalid)) {
-    if (!interactive) throw new Error("Pass a folder or --name");
+  if (!name && !interactive) throw new Error("Pass a folder or --name");
+  if (interactive && validateName(name))
     name = unwrap(
       await text({
-        message: invalid ? `"${name}" isn't kebab-case. Project name` : "Project name",
+        message: name ? `Project name ("${name}" isn't kebab-case)` : "Project name",
         placeholder: "my-app",
         // Offer the kebab-case version of a folder name that doesn't fit.
-        initialValue: invalid ? toKebabCase(name) : void 0,
+        initialValue: name ? toKebabCase(name) : void 0,
         validate: validateName
       })
     );
-  }
   const nameError = validateName(name);
-  if (nameError) throw new Error(`${nameError}: "${name}"`);
+  if (nameError || !name) throw new Error(`${nameError}: "${name}"`);
   let dir = args.dir;
   if (!dir && interactive)
     dir = unwrap(
@@ -2083,33 +2086,20 @@ async function gather(args, interactive) {
     })
   ) : DEFAULTS.database);
   const extraInfo = {
-    docker: { label: "Dockerfile", hint: "one image for the app", on: true },
-    git: {
-      label: "git",
-      hint: "init, pre-commit format/lint/type-check/test, first commit",
-      on: true
-    },
+    docker: { label: "Dockerfile", hint: "one image for the app" },
+    git: { label: "git", hint: "init, pre-commit format/lint/type-check/test, first commit" },
     codeReview: {
       label: "Code review",
-      hint: "fiscal-cr on pull requests; needs the org's ANTHROPIC_* variables",
-      on: false
+      hint: "fiscal-cr on pull requests; needs the org's ANTHROPIC_* variables"
     },
-    install: {
-      label: "Install and verify",
-      hint: "pnpm install, FTDS, format, build",
-      on: true
-    }
+    install: { label: "Install and verify", hint: "pnpm install, FTDS, format, build" }
   };
   const unasked = Object.keys(extraInfo).filter((k) => args[k] === void 0);
-  const byDefault = unasked.filter((k) => extraInfo[k].on);
+  const byDefault = unasked.filter((k) => DEFAULTS[k]);
   const picked = interactive && unasked.length ? unwrap(
     await multiselect({
       message: "Extras",
-      options: unasked.map((k) => ({
-        value: k,
-        label: extraInfo[k].label,
-        hint: extraInfo[k].hint
-      })),
+      options: unasked.map((k) => ({ value: k, ...extraInfo[k] })),
       initialValues: byDefault,
       required: false
     })
@@ -2133,8 +2123,8 @@ async function gather(args, interactive) {
       initialValue: DEFAULTS.versions
     })
   ) : DEFAULTS.versions);
-  const scope = args.scope ?? defaultScope(name);
-  const scopeError = validateScope(scope);
+  const scope = args.scope ?? `@${name}`;
+  const scopeError = args.scope && validateScope(args.scope);
   if (scopeError) throw new Error(scopeError);
   return {
     stack: args.stack,
