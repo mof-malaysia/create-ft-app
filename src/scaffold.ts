@@ -86,13 +86,8 @@ export function fillCatalog(files: RenderedFile[], packages: Packages) {
     throw new Error("pnpm-workspace.yaml template has no __CATALOG__ line");
   const lines = Object.entries(packages)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(
-      ([name, range]) => `  ${JSON.stringify(name)}: ${JSON.stringify(range)}`,
-    );
-  workspace.content = workspace.content.replace(
-    "  __CATALOG__",
-    lines.join("\n"),
-  );
+    .map(([name, range]) => `  ${JSON.stringify(name)}: ${JSON.stringify(range)}`);
+  workspace.content = workspace.content.replace("  __CATALOG__", lines.join("\n"));
 }
 
 export function writeProject(dir: string, files: RenderedFile[]) {
@@ -113,21 +108,14 @@ const PRESETS = [
   { file: ".oxlintrc.json", flag: "oxlint", dir: "oxlint-config" },
 ] as const;
 
-function inlinePresets(
-  files: RenderedFile[],
-  root: string,
-  scope: string,
-  flags: Flags,
-) {
+function inlinePresets(files: RenderedFile[], root: string, scope: string, flags: Flags) {
   for (const preset of PRESETS) {
     if (flags[preset.flag]) continue;
     const prefix = `${scope}/${preset.dir}/`;
     for (const file of files) {
       if (basename(file.path) !== preset.file) continue;
       const config = parseJsonc(file);
-      const refs = [config.extends]
-        .flat()
-        .filter((ref): ref is string => typeof ref === "string");
+      const refs = [config.extends].flat().filter((ref): ref is string => typeof ref === "string");
       const ref = refs.find((r) => r.includes(prefix));
       if (!ref) continue;
       const presetFile = join(
@@ -148,9 +136,7 @@ function loadPreset(path: string): Json {
     path,
     content: readFileSync(path, "utf8"),
   });
-  const parents = [parent]
-    .flat()
-    .filter((p): p is string => typeof p === "string");
+  const parents = [parent].flat().filter((p): p is string => typeof p === "string");
   const inherited = parents.reduce<Json>(
     (acc, p) => merge(acc, loadPreset(join(dirname(path), p))),
     {},
@@ -164,8 +150,7 @@ type Json = Record<string, any>;
 function merge(base: Json, over: Json): Json {
   const out: Json = { ...base };
   for (const [key, value] of Object.entries(over))
-    out[key] =
-      isObject(value) && isObject(out[key]) ? merge(out[key], value) : value;
+    out[key] = isObject(value) && isObject(out[key]) ? merge(out[key], value) : value;
   return out;
 }
 

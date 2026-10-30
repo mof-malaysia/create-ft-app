@@ -38,7 +38,7 @@ pnpm dev
 | `pnpm lint` | Oxlint |
 | `pnpm check-types` | TypeScript, no emit |
 | `pnpm test` | Rstest |
-| `pnpm format` | Prettier |
+| `pnpm format` | oxfmt |
 | `pnpm verify` | Lint, type check, test and build: what CI runs |
 <!-- @if api -->
 

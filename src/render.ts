@@ -63,10 +63,7 @@ export function renderText(
     } else if (kind === "elif" || kind === "else") {
       const top = stack.at(-1);
       if (!top) throw new Error(`@${kind} without @if at ${where}`);
-      const value =
-        top.parentOn &&
-        !top.matched &&
-        (kind === "else" || evaluate(rest, flags));
+      const value = top.parentOn && !top.matched && (kind === "else" || evaluate(rest, flags));
       top.on = value;
       top.matched ||= value;
     } else {
@@ -75,14 +72,11 @@ export function renderText(
   });
   if (stack.length) throw new Error(`Unclosed @if in ${file}`);
 
-  return out
-    .join("\n")
-    .replace(/(?<!\$)\{\{\s*(\w+)\s*\}\}/g, (match, key: string) => {
-      const value = vars[key];
-      if (value === undefined)
-        throw new Error(`Unknown template variable ${match} in ${file}`);
-      return value;
-    });
+  return out.join("\n").replace(/(?<!\$)\{\{\s*(\w+)\s*\}\}/g, (match, key: string) => {
+    const value = vars[key];
+    if (value === undefined) throw new Error(`Unknown template variable ${match} in ${file}`);
+    return value;
+  });
 }
 
 export type RenderedFile = { path: string; content: string };
@@ -109,13 +103,10 @@ export function renderDir(
   for (const entry of readdirSync(src, { withFileTypes: true })) {
     const from = join(src, entry.name);
     if (entry.isDirectory() && entry.name.startsWith("+")) {
-      if (evaluate(entry.name.slice(1), flags))
-        files.push(...renderDir(from, dest, flags, vars));
+      if (evaluate(entry.name.slice(1), flags)) files.push(...renderDir(from, dest, flags, vars));
       continue;
     }
-    const name = entry.name.startsWith("_")
-      ? `.${entry.name.slice(1)}`
-      : entry.name;
+    const name = entry.name.startsWith("_") ? `.${entry.name.slice(1)}` : entry.name;
     const to = dest ? `${dest}/${name}` : name;
     if (entry.isDirectory()) files.push(...renderDir(from, to, flags, vars));
     else {

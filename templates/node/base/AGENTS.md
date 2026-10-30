@@ -68,7 +68,7 @@ pnpm build                       # every package, into git-ignored dist/ folders
 - **Migrations are append-only.** Add a new entry to `src/db/migrations.ts` (keys sort by name, so keep the numeric prefix), never edit one that has shipped, and mirror the change in `src/db/schema.ts`.
 <!-- @endif -->
 <!-- @if web -->
-- **The UI is built on [FTDS](https://mof-malaysia.github.io/ftds/llms.txt)** (Base UI, Tailwind v4), pinned to {{ftdsVersion}} in `apps/web/components.json`. Add a component with `pnpm dlx shadcn@latest add @ftds/<name>` from `apps/web`. Use FTDS before writing your own; build anything missing from FTDS tokens (`bg-bg-*`, `text-txt-*`, `border-otl-*`), never raw Tailwind colours or `dark:` overrides. Files under `src/components/ui`, `src/components/blocks`, `src/lib/ftds` and `styles/ftds.css` stay as the registry ships them (Prettier and Oxlint skip them) so upgrades diff cleanly.
+- **The UI is built on [FTDS](https://mof-malaysia.github.io/ftds/llms.txt)** (Base UI, Tailwind v4), pinned to {{ftdsVersion}} in `apps/web/components.json`. Add a component with `pnpm dlx shadcn@latest add @ftds/<name>` from `apps/web`. Use FTDS before writing your own; build anything missing from FTDS tokens (`bg-bg-*`, `text-txt-*`, `border-otl-*`), never raw Tailwind colours or `dark:` overrides. Files under `src/components/ui`, `src/components/blocks`, `src/lib/ftds` and `styles/ftds.css` stay as the registry ships them (oxfmt and Oxlint skip them) so upgrades diff cleanly.
 - **UI text goes through `t()`** with a key in `src/i18n/messages/en.ts`; the type checker rejects missing keys.
 <!-- @endif -->
 - **Never commit** `.env` files (only `.env.example`) or `.claude/`. Stage paths explicitly rather than `git add -A`.

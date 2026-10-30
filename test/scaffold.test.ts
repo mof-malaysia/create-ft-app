@@ -35,25 +35,16 @@ describe("every combination renders cleanly", () => {
         const o: Options = { ...base, parts, database };
         const toolchain = (await resolveToolchain("tested")).value;
         const { files, catalog } = renderProject(o, toolchain, "0.0.0");
-        fillCatalog(
-          files,
-          (await resolvePackages("tested", catalog, toolchain.node)).value,
-        );
+        fillCatalog(files, (await resolvePackages("tested", catalog, toolchain.node)).value);
         const byPath = new Map(files.map((f) => [f.path, f.content]));
 
         for (const [path, text] of byPath) {
-          assert.doesNotMatch(
-            text,
-            /@(if|elif|else|endif)\b/,
-            `marker left in ${path}`,
-          );
+          assert.doesNotMatch(text, /@(if|elif|else|endif)\b/, `marker left in ${path}`);
           assert.doesNotMatch(text, /__CATALOG__/, path);
           if (path.endsWith("package.json")) JSON.parse(text);
           for (const ref of text.matchAll(/@repo\/([a-z-]+)/g))
             assert.ok(
-              (parts as string[]).includes(ref[1]!) ||
-                ref[1] === "api" ||
-                ref[1] === "web",
+              (parts as string[]).includes(ref[1]!) || ref[1] === "api" || ref[1] === "web",
               `${path} references @repo/${ref[1]}, which wasn't chosen`,
             );
         }
@@ -69,14 +60,8 @@ describe("every combination renders cleanly", () => {
           byPath.has("docker-compose.yml"),
           parts.includes("api") && database === "postgres",
         );
-        assert.equal(
-          byPath.has("Dockerfile"),
-          parts.includes("api") || parts.includes("web"),
-        );
-        assert.equal(
-          byPath.has("nginx.conf"),
-          parts.includes("web") && !parts.includes("api"),
-        );
+        assert.equal(byPath.has("Dockerfile"), parts.includes("api") || parts.includes("web"));
+        assert.equal(byPath.has("nginx.conf"), parts.includes("web") && !parts.includes("api"));
       });
     }
 });

@@ -18,9 +18,9 @@ pnpm dlx github:yourorg/create-ft-app#semver:^0
 | `oxlint-config`     | Oxlint presets `base`, `node`, `react` (left out: each package inlines its config)              |
 | `typescript-config` | tsconfig presets `base`, `node`, `library`, `react` (left out: each package inlines its config) |
 
-Always included: pnpm catalogs (one version per dependency), Turborepo tasks, Prettier, Rstest, `.nvmrc`, Renovate, VS Code settings, `AGENTS.md`/`CLAUDE.md` written for the parts you chose.
+Always included: pnpm catalogs (one version per dependency), Turborepo tasks, oxfmt, Rstest, `.nvmrc`, Renovate, VS Code settings, `AGENTS.md`/`CLAUDE.md` written for the parts you chose.
 
-Optional: Postgres for the api (Kysely + pg, migrations on boot, `docker-compose.yml` for local dev), a Dockerfile (api + SPA in one image, or nginx for a SPA alone), a GitHub Actions workflow, and git with a Prettier pre-commit hook (lefthook) and a first commit.
+Optional: Postgres for the api (Kysely + pg, migrations on boot, `docker-compose.yml` for local dev), a Dockerfile (api + SPA in one image, or nginx for a SPA alone), a GitHub Actions workflow, and git with an oxfmt pre-commit hook (lefthook) and a first commit.
 
 ## Options
 

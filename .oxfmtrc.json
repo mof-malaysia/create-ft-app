@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    // Committed build output.
+    "dist",
+    // Templates are only valid once rendered; generated projects are formatted then.
+    "templates",
+    "pnpm-lock.yaml"
+  ]
+}

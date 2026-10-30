@@ -17,13 +17,7 @@ import {
   type VersionMode,
 } from "./options.ts";
 import { fillCatalog, renderProject, writeProject } from "./scaffold.ts";
-import {
-  FTDS_ITEMS,
-  lastLines,
-  localPnpm,
-  provisionPnpm,
-  run,
-} from "./steps.ts";
+import { FTDS_ITEMS, lastLines, localPnpm, provisionPnpm, run } from "./steps.ts";
 import { major, resolvePackages, resolveToolchain } from "./versions.ts";
 
 function unwrap<T>(value: T): Exclude<T, symbol> {
@@ -51,8 +45,7 @@ function display(dir: string) {
 }
 
 const isEmptyDir = (dir: string) =>
-  !existsSync(dir) ||
-  readdirSync(dir).every((f) => f === ".git" || f === ".DS_Store");
+  !existsSync(dir) || readdirSync(dir).every((f) => f === ".git" || f === ".DS_Store");
 
 async function gather(args: Args, interactive: boolean): Promise<Options> {
   let name = args.name ?? (args.dir ? basename(resolve(args.dir)) : undefined);
@@ -140,9 +133,7 @@ async function gather(args: Args, interactive: boolean): Promise<Options> {
       hint: "pnpm install, FTDS, format, build",
     },
   };
-  const unasked = (Object.keys(extraInfo) as Extra[]).filter(
-    (k) => args[k] === undefined,
-  );
+  const unasked = (Object.keys(extraInfo) as Extra[]).filter((k) => args[k] === undefined);
   const picked: Extra[] =
     interactive && unasked.length
       ? unwrap(
@@ -217,16 +208,10 @@ async function main() {
   const flags = flagsFor(o);
 
   const s = progress();
-  s.start(
-    o.versions === "latest" ? "Looking up the latest versions" : "Preparing",
-  );
+  s.start(o.versions === "latest" ? "Looking up the latest versions" : "Preparing");
   const toolchain = await resolveToolchain(o.versions);
   const { files, catalog } = renderProject(o, toolchain.value, pkg.version);
-  const packages = await resolvePackages(
-    o.versions,
-    catalog,
-    toolchain.value.node,
-  );
+  const packages = await resolvePackages(o.versions, catalog, toolchain.value.node);
   fillCatalog(files, packages.value);
   const { node, pnpm, ftds, shadcn } = toolchain.value;
   s.stop(
@@ -241,10 +226,7 @@ async function main() {
   writeProject(o.dir, files);
   for (const f of files)
     if (f.path.endsWith(".env.example"))
-      copyFileSync(
-        join(o.dir, f.path),
-        join(o.dir, f.path.replace(/\.example$/, "")),
-      );
+      copyFileSync(join(o.dir, f.path), join(o.dir, f.path.replace(/\.example$/, "")));
   p.log.success(`Wrote ${files.length} files to ${o.dir}`);
 
   const failures: string[] = [];
@@ -339,9 +321,7 @@ async function main() {
         `Install it with: npm install -g pnpm@${major(pnpm)}`,
     );
   if (failures.length) {
-    p.outro(
-      `Done, but these steps failed: ${failures.join(", ")}. The output is above.`,
-    );
+    p.outro(`Done, but these steps failed: ${failures.join(", ")}. The output is above.`);
     process.exitCode = 1;
   } else p.outro("Done.");
 }

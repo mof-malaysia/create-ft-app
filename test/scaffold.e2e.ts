@@ -15,46 +15,32 @@ const exec = promisify(execFile);
 const CLI = process.env.CLI ?? join(import.meta.dirname, "../src/index.ts");
 const [cmd, ...pre] = CLI.endsWith(".ts") ? ["tsx", CLI] : ["node", CLI];
 
-const cases: { name: string; args: string[]; expect: (dir: string) => void }[] =
-  [
-    {
-      name: "web only, configs inlined",
-      args: ["--include", "web", "--no-git"],
-      expect: (dir) => {
-        assert.ok(
-          existsSync(join(dir, "apps/web/src/components/ui/button.tsx")),
-          "FTDS installed",
-        );
-        assert.ok(existsSync(join(dir, "nginx.conf")));
-        assert.ok(!existsSync(join(dir, "packages")));
-      },
+const cases: { name: string; args: string[]; expect: (dir: string) => void }[] = [
+  {
+    name: "web only, configs inlined",
+    args: ["--include", "web", "--no-git"],
+    expect: (dir) => {
+      assert.ok(existsSync(join(dir, "apps/web/src/components/ui/button.tsx")), "FTDS installed");
+      assert.ok(existsSync(join(dir, "nginx.conf")));
+      assert.ok(!existsSync(join(dir, "packages")));
     },
-    {
-      name: "api only, no database",
-      args: [
-        "--include",
-        "api,typescript-config",
-        "--db",
-        "none",
-        "--no-docker",
-        "--no-git",
-      ],
-      expect: (dir) => {
-        assert.ok(!existsSync(join(dir, "apps/api/src/db")));
-        assert.ok(!existsSync(join(dir, "Dockerfile")));
-      },
+  },
+  {
+    name: "api only, no database",
+    args: ["--include", "api,typescript-config", "--db", "none", "--no-docker", "--no-git"],
+    expect: (dir) => {
+      assert.ok(!existsSync(join(dir, "apps/api/src/db")));
+      assert.ok(!existsSync(join(dir, "Dockerfile")));
     },
-    {
-      name: "everything, latest versions",
-      args: ["--latest"],
-      expect: (dir) => {
-        assert.match(
-          readFileSync(join(dir, "pnpm-workspace.yaml"), "utf8"),
-          /fastify/,
-        );
-      },
+  },
+  {
+    name: "everything, latest versions",
+    args: ["--latest"],
+    expect: (dir) => {
+      assert.match(readFileSync(join(dir, "pnpm-workspace.yaml"), "utf8"), /fastify/);
     },
-  ];
+  },
+];
 
 describe("scaffold end to end", { concurrency: true }, () => {
   for (const c of cases)

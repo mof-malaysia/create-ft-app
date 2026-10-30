@@ -50,29 +50,12 @@ export async function provisionPnpm(version: string) {
   const dir = mkdtempSync(join(tmpdir(), "create-ft-app-"));
   const res = await run(
     "npm",
-    [
-      "install",
-      "--prefix",
-      dir,
-      "--no-audit",
-      "--no-fund",
-      "--loglevel=error",
-      `pnpm@${version}`,
-    ],
+    ["install", "--prefix", dir, "--no-audit", "--no-fund", "--loglevel=error", `pnpm@${version}`],
     { cwd: dir },
   );
-  if (!res.ok)
-    throw new Error(
-      `Couldn't install pnpm ${version}:\n${lastLines(res.output)}`,
-    );
+  if (!res.ok) throw new Error(`Couldn't install pnpm ${version}:\n${lastLines(res.output)}`);
   const bin = join(dir, "node_modules", ".bin");
   return { dir, env: { PATH: `${bin}${delimiter}${process.env.PATH ?? ""}` } };
 }
 
-export const FTDS_ITEMS = [
-  "ftds-init",
-  "button",
-  "tag",
-  "theme-switch",
-  "skiplink",
-];
+export const FTDS_ITEMS = ["ftds-init", "button", "tag", "theme-switch", "skiplink"];

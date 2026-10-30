@@ -59,11 +59,8 @@ function oneOf<T extends string>(
   value: string | undefined,
   allowed: readonly T[],
 ): T | undefined {
-  if (value === undefined || allowed.includes(value as T))
-    return value as T | undefined;
-  throw new Error(
-    `--${flag} must be one of ${allowed.join(", ")}, got "${value}"`,
-  );
+  if (value === undefined || allowed.includes(value as T)) return value as T | undefined;
+  throw new Error(`--${flag} must be one of ${allowed.join(", ")}, got "${value}"`);
 }
 
 export function parse(argv: string[]): Args {
@@ -89,8 +86,7 @@ export function parse(argv: string[]): Args {
     },
   });
 
-  if (positionals.length > 1)
-    throw new Error(`Expected one folder, got: ${positionals.join(" ")}`);
+  if (positionals.length > 1) throw new Error(`Expected one folder, got: ${positionals.join(" ")}`);
 
   let include: Part[] | undefined;
   if (values.include !== undefined) {
@@ -109,9 +105,7 @@ export function parse(argv: string[]): Args {
     include,
     db: oneOf("db", values.db, DATABASES),
     scope: values.scope,
-    versions: values.latest
-      ? "latest"
-      : oneOf("versions", values.versions, VERSION_MODES),
+    versions: values.latest ? "latest" : oneOf("versions", values.versions, VERSION_MODES),
     docker: values.docker,
     ci: values.ci,
     git: values.git,

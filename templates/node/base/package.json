@@ -13,14 +13,14 @@
     // @if git
     "prepare": "lefthook install || echo \"Skipped git hooks: no git repository\"",
     // @endif
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
   },
   "devDependencies": {
     // @if git
     "lefthook": "catalog:",
     // @endif
-    "prettier": "catalog:",
+    "oxfmt": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   },

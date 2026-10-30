@@ -1,9 +1,8 @@
 {
   "name": "create-ft-app",
   "version": "0.1.0",
-  "description": "Scaffold a Turborepo project with the team's Node and SPA stack",
   "private": true,
-  "type": "module",
+  "description": "Scaffold a Turborepo project with the team's Node and SPA stack",
   "bin": {
     "create-ft-app": "dist/index.mjs"
   },
@@ -12,25 +11,26 @@
     "templates",
     "catalog.json"
   ],
+  "type": "module",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/index.mjs --banner:js=\"#!/usr/bin/env node\nimport { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\" --log-level=warning",
     "dev": "tsx src/index.ts",
     "check-types": "tsc --noEmit",
     "test": "tsx --test test/*.test.ts",
     "test:scaffold": "tsx --test test/scaffold.e2e.ts",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
   },
   "devDependencies": {
     "@clack/prompts": "^1.8.1",
     "@types/node": "^24.19.2",
     "esbuild": "^0.28.2",
-    "prettier": "^3.9.10",
+    "oxfmt": "^0.75.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
-  "packageManager": "pnpm@12.16.1",
   "engines": {
     "node": ">=22"
-  }
+  },
+  "packageManager": "pnpm@12.16.1"
 }

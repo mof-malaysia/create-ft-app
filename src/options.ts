@@ -1,12 +1,6 @@
 /** Everything the scaffold needs to know, gathered from flags and prompts. */
 
-export const PARTS = [
-  "web",
-  "api",
-  "contracts",
-  "oxlint-config",
-  "typescript-config",
-] as const;
+export const PARTS = ["web", "api", "contracts", "oxlint-config", "typescript-config"] as const;
 export type Part = (typeof PARTS)[number];
 
 export const PART_HINTS: Record<Part, string> = {
@@ -14,8 +8,7 @@ export const PART_HINTS: Record<Part, string> = {
   api: "Fastify API: Valibot, OpenAPI + Scalar, Pino",
   contracts: "Valibot schemas shared by web and api",
   "oxlint-config": "shared Oxlint presets (otherwise inlined per package)",
-  "typescript-config":
-    "shared tsconfig presets (otherwise inlined per package)",
+  "typescript-config": "shared tsconfig presets (otherwise inlined per package)",
 };
 
 export const STACKS = ["node", "go"] as const;
@@ -90,7 +83,5 @@ export function validateName(name: string | undefined): string | undefined {
 }
 
 export function validateScope(scope: string): string | undefined {
-  return /^@[a-z0-9][a-z0-9._-]*$/.test(scope)
-    ? undefined
-    : 'The scope must look like "@repo"';
+  return /^@[a-z0-9][a-z0-9._-]*$/.test(scope) ? undefined : 'The scope must look like "@repo"';
 }

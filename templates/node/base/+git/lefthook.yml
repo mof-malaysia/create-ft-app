@@ -3,5 +3,6 @@ pre-commit:
   jobs:
     - name: format
       glob: "*.{ts,tsx,js,mjs,cjs,json,jsonc,md,css,yml,yaml}"
-      run: pnpm exec prettier --write --ignore-unknown {staged_files}
+      # Calls the binary directly: no pnpm startup, and no pnpm version check.
+      run: node_modules/.bin/oxfmt --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true

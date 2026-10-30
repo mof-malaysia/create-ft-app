@@ -1469,9 +1469,8 @@ ${i2}
 var package_default = {
   name: "create-ft-app",
   version: "0.1.0",
-  description: "Scaffold a Turborepo project with the team's Node and SPA stack",
   private: true,
-  type: "module",
+  description: "Scaffold a Turborepo project with the team's Node and SPA stack",
   bin: {
     "create-ft-app": "dist/index.mjs"
   },
@@ -1480,6 +1479,7 @@ var package_default = {
     "templates",
     "catalog.json"
   ],
+  type: "module",
   scripts: {
     build: `esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/index.mjs --banner:js="#!/usr/bin/env node
 import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" --log-level=warning`,
@@ -1487,34 +1487,28 @@ import { createRequire } from 'node:module'; const require = createRequire(impor
     "check-types": "tsc --noEmit",
     test: "tsx --test test/*.test.ts",
     "test:scaffold": "tsx --test test/scaffold.e2e.ts",
-    format: "prettier --write .",
-    "format:check": "prettier --check ."
+    format: "oxfmt",
+    "format:check": "oxfmt --check"
   },
   devDependencies: {
     "@clack/prompts": "^1.8.1",
     "@types/node": "^24.19.2",
     esbuild: "^0.28.2",
-    prettier: "^3.9.10",
+    oxfmt: "^0.75.0",
     tsx: "^4.23.15",
     typescript: "^7.0.2"
   },
-  packageManager: "pnpm@12.16.1",
   engines: {
     node: ">=22"
-  }
+  },
+  packageManager: "pnpm@12.16.1"
 };
 
 // src/args.ts
 import { parseArgs } from "node:util";
 
 // src/options.ts
-var PARTS = [
-  "web",
-  "api",
-  "contracts",
-  "oxlint-config",
-  "typescript-config"
-];
+var PARTS = ["web", "api", "contracts", "oxlint-config", "typescript-config"];
 var PART_HINTS = {
   web: "React SPA: Rsbuild, TanStack Router + Query, FTDS",
   api: "Fastify API: Valibot, OpenAPI + Scalar, Pino",
@@ -1587,11 +1581,8 @@ Examples
   pnpm dlx github:yourorg/create-ft-app my-app --include web,api,contracts -y
 `;
 function oneOf(flag, value, allowed) {
-  if (value === void 0 || allowed.includes(value))
-    return value;
-  throw new Error(
-    `--${flag} must be one of ${allowed.join(", ")}, got "${value}"`
-  );
+  if (value === void 0 || allowed.includes(value)) return value;
+  throw new Error(`--${flag} must be one of ${allowed.join(", ")}, got "${value}"`);
 }
 function parse(argv) {
   const { values, positionals } = parseArgs({
@@ -1615,8 +1606,7 @@ function parse(argv) {
       version: { type: "boolean", short: "v" }
     }
   });
-  if (positionals.length > 1)
-    throw new Error(`Expected one folder, got: ${positionals.join(" ")}`);
+  if (positionals.length > 1) throw new Error(`Expected one folder, got: ${positionals.join(" ")}`);
   let include;
   if (values.include !== void 0) {
     const given = values.include.split(",").map((s) => s.trim()).filter(Boolean);
@@ -1692,8 +1682,7 @@ function renderText(text2, flags, vars, file = "template") {
   if (stack.length) throw new Error(`Unclosed @if in ${file}`);
   return out.join("\n").replace(/(?<!\$)\{\{\s*(\w+)\s*\}\}/g, (match, key) => {
     const value = vars[key];
-    if (value === void 0)
-      throw new Error(`Unknown template variable ${match} in ${file}`);
+    if (value === void 0) throw new Error(`Unknown template variable ${match} in ${file}`);
     return value;
   });
 }
@@ -1706,8 +1695,7 @@ function renderDir(src, dest, flags, vars) {
   for (const entry of readdirSync(src, { withFileTypes: true })) {
     const from = join(src, entry.name);
     if (entry.isDirectory() && entry.name.startsWith("+")) {
-      if (evaluate(entry.name.slice(1), flags))
-        files.push(...renderDir(from, dest, flags, vars));
+      if (evaluate(entry.name.slice(1), flags)) files.push(...renderDir(from, dest, flags, vars));
       continue;
     }
     const name = entry.name.startsWith("_") ? `.${entry.name.slice(1)}` : entry.name;
@@ -1752,10 +1740,10 @@ var catalog_default = {
     ky: "^2.2.0",
     kysely: "^0.29.7",
     lefthook: "^2.2.2",
+    oxfmt: "^0.75.0",
     oxlint: "^1.90.0",
     pg: "^8.23.1",
     "pino-pretty": "^13.2.0",
-    prettier: "^3.9.10",
     react: "^19.3.1",
     "react-dom": "^19.3.1",
     tailwindcss: "^4.3.3",
@@ -1767,12 +1755,7 @@ var catalog_default = {
 };
 
 // src/versions.ts
-var {
-  $comment: _,
-  postgres,
-  packages: testedPackages,
-  ...testedToolchain
-} = catalog_default;
+var { $comment: _, postgres, packages: testedPackages, ...testedToolchain } = catalog_default;
 var tested = testedToolchain;
 var POSTGRES_VERSION = postgres;
 var major = (version) => version.replace(/^v/, "").split(".")[0];
@@ -1788,13 +1771,13 @@ async function getJson(url, headers = {}) {
 var npmLatest = (name) => getJson(
   `https://registry.npmjs.org/${name.replace("/", "%2f")}/latest`
 ).then((p) => p.version);
-var nodeLts = () => getJson(
-  "https://nodejs.org/dist/index.json"
-).then((releases) => {
-  const lts = releases.find((r2) => r2.lts);
-  if (!lts) throw new Error("no LTS release listed");
-  return major(lts.version);
-});
+var nodeLts = () => getJson("https://nodejs.org/dist/index.json").then(
+  (releases) => {
+    const lts = releases.find((r2) => r2.lts);
+    if (!lts) throw new Error("no LTS release listed");
+    return major(lts.version);
+  }
+);
 var ftdsLatest = () => getJson(
   "https://api.github.com/repos/mof-malaysia/ftds/tags?per_page=20",
   process.env.GITHUB_TOKEN ? { authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}
@@ -1828,8 +1811,7 @@ async function resolveToolchain(mode) {
 async function resolvePackages(mode, names, nodeMajor) {
   const known = testedPackages;
   const missing = names.filter((n3) => !(n3 in known));
-  if (missing.length)
-    throw new Error(`catalog.json has no version for: ${missing.join(", ")}`);
+  if (missing.length) throw new Error(`catalog.json has no version for: ${missing.join(", ")}`);
   if (mode === "tested")
     return {
       value: Object.fromEntries(names.map((n3) => [n3, known[n3]])),
@@ -1902,13 +1884,8 @@ function fillCatalog(files, packages) {
   const workspace = files.find((f) => f.path === "pnpm-workspace.yaml");
   if (!workspace?.content.includes("  __CATALOG__"))
     throw new Error("pnpm-workspace.yaml template has no __CATALOG__ line");
-  const lines = Object.entries(packages).sort(([a2], [b]) => a2.localeCompare(b)).map(
-    ([name, range]) => `  ${JSON.stringify(name)}: ${JSON.stringify(range)}`
-  );
-  workspace.content = workspace.content.replace(
-    "  __CATALOG__",
-    lines.join("\n")
-  );
+  const lines = Object.entries(packages).sort(([a2], [b]) => a2.localeCompare(b)).map(([name, range]) => `  ${JSON.stringify(name)}: ${JSON.stringify(range)}`);
+  workspace.content = workspace.content.replace("  __CATALOG__", lines.join("\n"));
 }
 function writeProject(dir, files) {
   for (const file of files) {
@@ -2007,32 +1984,15 @@ async function provisionPnpm(version) {
   const dir = mkdtempSync(join3(tmpdir(), "create-ft-app-"));
   const res = await run(
     "npm",
-    [
-      "install",
-      "--prefix",
-      dir,
-      "--no-audit",
-      "--no-fund",
-      "--loglevel=error",
-      `pnpm@${version}`
-    ],
+    ["install", "--prefix", dir, "--no-audit", "--no-fund", "--loglevel=error", `pnpm@${version}`],
     { cwd: dir }
   );
-  if (!res.ok)
-    throw new Error(
-      `Couldn't install pnpm ${version}:
-${lastLines(res.output)}`
-    );
+  if (!res.ok) throw new Error(`Couldn't install pnpm ${version}:
+${lastLines(res.output)}`);
   const bin = join3(dir, "node_modules", ".bin");
   return { dir, env: { PATH: `${bin}${delimiter}${process.env.PATH ?? ""}` } };
 }
-var FTDS_ITEMS = [
-  "ftds-init",
-  "button",
-  "tag",
-  "theme-switch",
-  "skiplink"
-];
+var FTDS_ITEMS = ["ftds-init", "button", "tag", "theme-switch", "skiplink"];
 
 // src/index.ts
 function unwrap(value) {
@@ -2128,9 +2088,7 @@ async function gather(args, interactive) {
       hint: "pnpm install, FTDS, format, build"
     }
   };
-  const unasked = Object.keys(extraInfo).filter(
-    (k) => args[k] === void 0
-  );
+  const unasked = Object.keys(extraInfo).filter((k) => args[k] === void 0);
   const picked = interactive && unasked.length ? unwrap(
     await multiselect({
       message: "Extras",
@@ -2190,16 +2148,10 @@ async function main() {
   const o = await gather(args, interactive);
   const flags = flagsFor(o);
   const s = progress();
-  s.start(
-    o.versions === "latest" ? "Looking up the latest versions" : "Preparing"
-  );
+  s.start(o.versions === "latest" ? "Looking up the latest versions" : "Preparing");
   const toolchain = await resolveToolchain(o.versions);
   const { files, catalog } = renderProject(o, toolchain.value, package_default.version);
-  const packages = await resolvePackages(
-    o.versions,
-    catalog,
-    toolchain.value.node
-  );
+  const packages = await resolvePackages(o.versions, catalog, toolchain.value.node);
   fillCatalog(files, packages.value);
   const { node, pnpm, ftds, shadcn } = toolchain.value;
   s.stop(
@@ -2213,10 +2165,7 @@ async function main() {
   writeProject(o.dir, files);
   for (const f of files)
     if (f.path.endsWith(".env.example"))
-      copyFileSync(
-        join4(o.dir, f.path),
-        join4(o.dir, f.path.replace(/\.example$/, ""))
-      );
+      copyFileSync(join4(o.dir, f.path), join4(o.dir, f.path.replace(/\.example$/, "")));
   log.success(`Wrote ${files.length} files to ${o.dir}`);
   const failures = [];
   const step = async (label, cmd, cmdArgs, opts = {}) => {
@@ -2299,9 +2248,7 @@ async function main() {
 Install it with: npm install -g pnpm@${major(pnpm)}`
     );
   if (failures.length) {
-    outro(
-      `Done, but these steps failed: ${failures.join(", ")}. The output is above.`
-    );
+    outro(`Done, but these steps failed: ${failures.join(", ")}. The output is above.`);
     process.exitCode = 1;
   } else outro("Done.");
 }

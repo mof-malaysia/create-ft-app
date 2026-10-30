@@ -13,10 +13,7 @@ describe("evaluate", () => {
   });
 
   it("rejects unknown flags", () => {
-    assert.throws(
-      () => evaluate("rust", flags),
-      /Unknown template flag "rust"/,
-    );
+    assert.throws(() => evaluate("rust", flags), /Unknown template flag "rust"/);
   });
 });
 
@@ -48,21 +45,12 @@ describe("renderText", () => {
   });
 
   it("fills variables and refuses unknown ones", () => {
-    assert.equal(
-      renderText("{{name}}/{{ scope }}", flags, { name: "a", scope: "@b" }),
-      "a/@b",
-    );
-    assert.throws(
-      () => renderText("{{nope}}", flags, {}),
-      /Unknown template variable/,
-    );
+    assert.equal(renderText("{{name}}/{{ scope }}", flags, { name: "a", scope: "@b" }), "a/@b");
+    assert.throws(() => renderText("{{nope}}", flags, {}), /Unknown template variable/);
   });
 
   it("leaves GitHub Actions expressions alone", () => {
-    assert.equal(
-      renderText("${{ github.ref }}", flags, {}),
-      "${{ github.ref }}",
-    );
+    assert.equal(renderText("${{ github.ref }}", flags, {}), "${{ github.ref }}");
   });
 
   it("reports unbalanced blocks", () => {
