@@ -8,6 +8,7 @@ import {
   DEFAULTS,
   PART_HINTS,
   PARTS,
+  defaultScope,
   flagsFor,
   validateName,
   validateScope,
@@ -123,28 +124,42 @@ async function gather(args: Args, interactive: boolean): Promise<Options> {
         )
       : DEFAULTS.database);
 
-  type Extra = "docker" | "ci" | "git" | "install";
-  const extraInfo: Record<Extra, { label: string; hint: string }> = {
-    docker: { label: "Dockerfile", hint: "one image for the app" },
-    ci: { label: "GitHub Actions", hint: "lint, types, test, build" },
-    git: { label: "git", hint: "init, pre-commit hook, first commit" },
+  type Extra = "docker" | "codeReview" | "git" | "install";
+  const extraInfo: Record<Extra, { label: string; hint: string; on: boolean }> = {
+    docker: { label: "Dockerfile", hint: "one image for the app", on: true },
+    git: {
+      label: "git",
+      hint: "init, pre-commit format/lint/type-check/test, first commit",
+      on: true,
+    },
+    codeReview: {
+      label: "Code review",
+      hint: "fiscal-cr on pull requests; needs the org's ANTHROPIC_* variables",
+      on: false,
+    },
     install: {
       label: "Install and verify",
       hint: "pnpm install, FTDS, format, build",
+      on: true,
     },
   };
   const unasked = (Object.keys(extraInfo) as Extra[]).filter((k) => args[k] === undefined);
+  const byDefault = unasked.filter((k) => extraInfo[k].on);
   const picked: Extra[] =
     interactive && unasked.length
       ? unwrap(
           await p.multiselect<Extra>({
             message: "Extras",
-            options: unasked.map((k) => ({ value: k, ...extraInfo[k] })),
-            initialValues: unasked,
+            options: unasked.map((k) => ({
+              value: k,
+              label: extraInfo[k].label,
+              hint: extraInfo[k].hint,
+            })),
+            initialValues: byDefault,
             required: false,
           }),
         )
-      : unasked;
+      : byDefault;
   const extra = (k: Extra) => args[k] ?? picked.includes(k);
 
   const versions =
@@ -170,7 +185,7 @@ async function gather(args: Args, interactive: boolean): Promise<Options> {
         )
       : DEFAULTS.versions);
 
-  const scope = args.scope ?? DEFAULTS.scope;
+  const scope = args.scope ?? defaultScope(name);
   const scopeError = validateScope(scope);
   if (scopeError) throw new Error(scopeError);
 
@@ -182,7 +197,7 @@ async function gather(args: Args, interactive: boolean): Promise<Options> {
     parts,
     database,
     docker: extra("docker"),
-    ci: extra("ci"),
+    codeReview: extra("codeReview"),
     git: extra("git"),
     install: extra("install"),
     versions,

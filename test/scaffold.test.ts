@@ -18,10 +18,10 @@ const base: Omit<Options, "parts"> = {
   stack: "node",
   name: "demo-app",
   dir: "/tmp/demo-app",
-  scope: "@repo",
+  scope: "@demo-app",
   database: "postgres",
   docker: true,
-  ci: true,
+  codeReview: true,
   git: true,
   install: false,
   versions: "tested",
@@ -42,10 +42,10 @@ describe("every combination renders cleanly", () => {
           assert.doesNotMatch(text, /@(if|elif|else|endif)\b/, `marker left in ${path}`);
           assert.doesNotMatch(text, /__CATALOG__/, path);
           if (path.endsWith("package.json")) JSON.parse(text);
-          for (const ref of text.matchAll(/@repo\/([a-z-]+)/g))
+          for (const ref of text.matchAll(/@demo-app\/([a-z-]+)/g))
             assert.ok(
               (parts as string[]).includes(ref[1]!) || ref[1] === "api" || ref[1] === "web",
-              `${path} references @repo/${ref[1]}, which wasn't chosen`,
+              `${path} references @demo-app/${ref[1]}, which wasn't chosen`,
             );
         }
         if (parts.includes("api")) {
@@ -62,6 +62,8 @@ describe("every combination renders cleanly", () => {
         );
         assert.equal(byPath.has("Dockerfile"), parts.includes("api") || parts.includes("web"));
         assert.equal(byPath.has("nginx.conf"), parts.includes("web") && !parts.includes("api"));
+        assert.ok(byPath.has(".github/workflows/code-review.yml"));
+        assert.ok(![...byPath.keys()].some((p) => p.endsWith("/ci.yml")), "no CI workflow");
       });
     }
 });

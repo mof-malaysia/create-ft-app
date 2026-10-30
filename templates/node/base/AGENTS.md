@@ -75,6 +75,10 @@ pnpm build                       # every package, into git-ignored dist/ folders
 
 ## Before calling a change done
 
+<!-- @if git -->
+There is no CI. The pre-commit hook formats staged files and runs lint, type checks and tests; don't bypass it with `--no-verify`. Run the full check (which also builds) yourself:
+<!-- @endif -->
+
 ```sh
 pnpm format
 pnpm verify                      # lint, check-types, test, build

@@ -20,11 +20,11 @@ Options
   --name <name>          Project name (defaults to the folder name)
   --include <parts>      Comma-separated: ${PARTS.join(", ")}
   --db <${DATABASES.join("|")}>   Database for the api (default: ${DEFAULTS.database})
-  --scope <@scope>       npm scope for workspace packages (default: ${DEFAULTS.scope})
+  --scope <@scope>       npm scope for workspace packages (default: @<name>)
   --versions <mode>      ${VERSION_MODES.join(" or ")} (default: ${DEFAULTS.versions})
   --latest               Same as --versions latest
   --[no-]docker          Dockerfile (default: on)
-  --[no-]ci              GitHub Actions workflow (default: on)
+  --[no-]code-review     fiscal-cr code review on pull requests (default: off)
   --[no-]git             git init, hooks and a first commit (default: on)
   --[no-]install         Install, add FTDS, format and verify (default: on)
   -y, --yes              Accept defaults for anything not given as a flag
@@ -45,7 +45,7 @@ export type Args = {
   scope?: string;
   versions?: VersionMode;
   docker?: boolean;
-  ci?: boolean;
+  codeReview?: boolean;
   git?: boolean;
   install?: boolean;
   yes: boolean;
@@ -77,7 +77,7 @@ export function parse(argv: string[]): Args {
       versions: { type: "string" },
       latest: { type: "boolean" },
       docker: { type: "boolean" },
-      ci: { type: "boolean" },
+      "code-review": { type: "boolean" },
       git: { type: "boolean" },
       install: { type: "boolean" },
       yes: { type: "boolean", short: "y" },
@@ -107,7 +107,7 @@ export function parse(argv: string[]): Args {
     scope: values.scope,
     versions: values.latest ? "latest" : oneOf("versions", values.versions, VERSION_MODES),
     docker: values.docker,
-    ci: values.ci,
+    codeReview: values["code-review"],
     git: values.git,
     install: values.install,
     yes: values.yes ?? false,

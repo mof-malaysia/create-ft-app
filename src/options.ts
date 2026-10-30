@@ -25,12 +25,10 @@ export type VersionMode = (typeof VERSION_MODES)[number];
 /** Defaults for anything not passed as a flag (and shown in --help). */
 export const DEFAULTS = {
   stack: "node",
-  scope: "@repo",
   database: "postgres",
   versions: "tested",
 } as const satisfies {
   stack: Stack;
-  scope: string;
   database: Database;
   versions: VersionMode;
 };
@@ -40,12 +38,13 @@ export type Options = {
   name: string;
   /** Absolute path of the new project. */
   dir: string;
-  /** npm scope for workspace packages, e.g. "@repo". */
+  /** npm scope for workspace packages; defaults to "@" + name. */
   scope: string;
   parts: Part[];
   database: Database;
   docker: boolean;
-  ci: boolean;
+  /** The fiscal-cr code review workflow on pull requests. */
+  codeReview: boolean;
   git: boolean;
   install: boolean;
   versions: VersionMode;
@@ -67,7 +66,7 @@ export function flagsFor(o: Options): Flags {
     postgres: api && o.database === "postgres",
     fullstack: web && api,
     docker: o.docker && (web || api),
-    ci: o.ci,
+    codeReview: o.codeReview,
     git: o.git,
   };
 }
@@ -82,6 +81,9 @@ export function validateName(name: string | undefined): string | undefined {
   return undefined;
 }
 
+/** The default npm scope: the project name, so packages are "@<name>/api". */
+export const defaultScope = (name: string) => `@${name}`;
+
 export function validateScope(scope: string): string | undefined {
-  return /^@[a-z0-9][a-z0-9._-]*$/.test(scope) ? undefined : 'The scope must look like "@repo"';
+  return /^@[a-z0-9][a-z0-9._-]*$/.test(scope) ? undefined : 'The scope must look like "@my-app"';
 }

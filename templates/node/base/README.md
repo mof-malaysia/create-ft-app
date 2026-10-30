@@ -39,7 +39,7 @@ pnpm dev
 | `pnpm check-types` | TypeScript, no emit |
 | `pnpm test` | Rstest |
 | `pnpm format` | oxfmt |
-| `pnpm verify` | Lint, type check, test and build: what CI runs |
+| `pnpm verify` | Lint, type check, test and build |
 <!-- @if api -->
 
 ## Configuration
@@ -58,6 +58,18 @@ The api reads environment variables, validated in `apps/api/src/env.ts`:
 <!-- @if web -->
 | `WEB_DIST` | (none) | Folder with the built SPA to serve; set in the Docker image |
 <!-- @endif -->
+<!-- @endif -->
+<!-- @if git -->
+
+## Checks
+
+There is no CI workflow. A pre-commit hook (lefthook, installed by `pnpm install`) formats staged files with oxfmt, then runs lint, type checks and tests through Turborepo; a failure stops the commit.
+<!-- @endif -->
+<!-- @if codeReview -->
+
+## Code review
+
+Pull requests are reviewed by [fiscal-cr](https://github.com/mof-malaysia/fiscal-cr) (`.github/workflows/code-review.yml`). It posts one sticky comment and never blocks a merge. It needs the organisation's `ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID`, `ANTHROPIC_SERVICE_ACCOUNT_ID` and `ANTHROPIC_WORKSPACE_ID` Actions variables.
 <!-- @endif -->
 <!-- @if docker -->
 

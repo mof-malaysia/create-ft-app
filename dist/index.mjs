@@ -1522,7 +1522,6 @@ var DATABASES = ["postgres", "none"];
 var VERSION_MODES = ["tested", "latest"];
 var DEFAULTS = {
   stack: "node",
-  scope: "@repo",
   database: "postgres",
   versions: "tested"
 };
@@ -1539,7 +1538,7 @@ function flagsFor(o) {
     postgres: api && o.database === "postgres",
     fullstack: web && api,
     docker: o.docker && (web || api),
-    ci: o.ci,
+    codeReview: o.codeReview,
     git: o.git
   };
 }
@@ -1551,8 +1550,9 @@ function validateName(name) {
   if (name.length > 214) return "Keep the name under 214 characters";
   return void 0;
 }
+var defaultScope = (name) => `@${name}`;
 function validateScope(scope) {
-  return /^@[a-z0-9][a-z0-9._-]*$/.test(scope) ? void 0 : 'The scope must look like "@repo"';
+  return /^@[a-z0-9][a-z0-9._-]*$/.test(scope) ? void 0 : 'The scope must look like "@my-app"';
 }
 
 // src/args.ts
@@ -1565,11 +1565,11 @@ Options
   --name <name>          Project name (defaults to the folder name)
   --include <parts>      Comma-separated: ${PARTS.join(", ")}
   --db <${DATABASES.join("|")}>   Database for the api (default: ${DEFAULTS.database})
-  --scope <@scope>       npm scope for workspace packages (default: ${DEFAULTS.scope})
+  --scope <@scope>       npm scope for workspace packages (default: @<name>)
   --versions <mode>      ${VERSION_MODES.join(" or ")} (default: ${DEFAULTS.versions})
   --latest               Same as --versions latest
   --[no-]docker          Dockerfile (default: on)
-  --[no-]ci              GitHub Actions workflow (default: on)
+  --[no-]code-review     fiscal-cr code review on pull requests (default: off)
   --[no-]git             git init, hooks and a first commit (default: on)
   --[no-]install         Install, add FTDS, format and verify (default: on)
   -y, --yes              Accept defaults for anything not given as a flag
@@ -1598,7 +1598,7 @@ function parse(argv) {
       versions: { type: "string" },
       latest: { type: "boolean" },
       docker: { type: "boolean" },
-      ci: { type: "boolean" },
+      "code-review": { type: "boolean" },
       git: { type: "boolean" },
       install: { type: "boolean" },
       yes: { type: "boolean", short: "y" },
@@ -1622,7 +1622,7 @@ function parse(argv) {
     scope: values.scope,
     versions: values.latest ? "latest" : oneOf("versions", values.versions, VERSION_MODES),
     docker: values.docker,
-    ci: values.ci,
+    codeReview: values["code-review"],
     git: values.git,
     install: values.install,
     yes: values.yes ?? false,
@@ -2080,23 +2080,37 @@ async function gather(args, interactive) {
     })
   ) : DEFAULTS.database);
   const extraInfo = {
-    docker: { label: "Dockerfile", hint: "one image for the app" },
-    ci: { label: "GitHub Actions", hint: "lint, types, test, build" },
-    git: { label: "git", hint: "init, pre-commit hook, first commit" },
+    docker: { label: "Dockerfile", hint: "one image for the app", on: true },
+    git: {
+      label: "git",
+      hint: "init, pre-commit format/lint/type-check/test, first commit",
+      on: true
+    },
+    codeReview: {
+      label: "Code review",
+      hint: "fiscal-cr on pull requests; needs the org's ANTHROPIC_* variables",
+      on: false
+    },
     install: {
       label: "Install and verify",
-      hint: "pnpm install, FTDS, format, build"
+      hint: "pnpm install, FTDS, format, build",
+      on: true
     }
   };
   const unasked = Object.keys(extraInfo).filter((k) => args[k] === void 0);
+  const byDefault = unasked.filter((k) => extraInfo[k].on);
   const picked = interactive && unasked.length ? unwrap(
     await multiselect({
       message: "Extras",
-      options: unasked.map((k) => ({ value: k, ...extraInfo[k] })),
-      initialValues: unasked,
+      options: unasked.map((k) => ({
+        value: k,
+        label: extraInfo[k].label,
+        hint: extraInfo[k].hint
+      })),
+      initialValues: byDefault,
       required: false
     })
-  ) : unasked;
+  ) : byDefault;
   const extra = (k) => args[k] ?? picked.includes(k);
   const versions = args.versions ?? (interactive ? unwrap(
     await select({
@@ -2116,7 +2130,7 @@ async function gather(args, interactive) {
       initialValue: DEFAULTS.versions
     })
   ) : DEFAULTS.versions);
-  const scope = args.scope ?? DEFAULTS.scope;
+  const scope = args.scope ?? defaultScope(name);
   const scopeError = validateScope(scope);
   if (scopeError) throw new Error(scopeError);
   return {
@@ -2127,7 +2141,7 @@ async function gather(args, interactive) {
     parts,
     database,
     docker: extra("docker"),
-    ci: extra("ci"),
+    codeReview: extra("codeReview"),
     git: extra("git"),
     install: extra("install"),
     versions
