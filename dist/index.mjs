@@ -1468,7 +1468,7 @@ ${i2}
 // package.json
 var package_default = {
   name: "create-ft-app",
-  version: "0.1.0",
+  version: "0.1.1",
   private: true,
   description: "Scaffold a Turborepo project with the team's Node and SPA stack",
   bin: {
@@ -1583,8 +1583,8 @@ Options
   -v, --version          Show the CLI version
 
 Examples
-  pnpm dlx github:mof-malaysia/create-ft-app#semver:^0
-  pnpm dlx github:mof-malaysia/create-ft-app my-app --include web,api,contracts -y
+  pnpm --config.dlx-cache-max-age=0 dlx github:mof-malaysia/create-ft-app#semver:^0
+  pnpm --config.dlx-cache-max-age=0 dlx github:mof-malaysia/create-ft-app#semver:^0 my-app --include web,api,contracts -y
 `;
 function oneOf(flag, value, allowed) {
   if (value === void 0 || allowed.includes(value)) return value;

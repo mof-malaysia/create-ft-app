@@ -34,8 +34,8 @@ Options
   -v, --version          Show the CLI version
 
 Examples
-  pnpm dlx github:mof-malaysia/create-ft-app#semver:^0
-  pnpm dlx github:mof-malaysia/create-ft-app my-app --include web,api,contracts -y
+  pnpm --config.dlx-cache-max-age=0 dlx github:mof-malaysia/create-ft-app#semver:^0
+  pnpm --config.dlx-cache-max-age=0 dlx github:mof-malaysia/create-ft-app#semver:^0 my-app --include web,api,contracts -y
 `;
 
 export type Args = {
