@@ -71,14 +71,25 @@ export function flagsFor(o: Options): Flags {
   };
 }
 
-const NAME = /^[a-z0-9][a-z0-9._-]*$/;
+/** kebab-case: starts with a letter, lowercase words joined by single dashes. */
+const NAME = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
+
+/** "Budget_Portal v2" → "budget-portal-v2", for suggesting a valid name. */
+export const toKebabCase = (text: string) =>
+  text
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^[^a-z]+|-+$/g, "");
 
 export function validateName(name: string | undefined): string | undefined {
   if (!name) return "Enter a project name";
-  if (!NAME.test(name))
-    return "Use lowercase letters, numbers, dots, dashes or underscores (a valid npm package name)";
   if (name.length > 214) return "Keep the name under 214 characters";
-  return undefined;
+  if (NAME.test(name)) return undefined;
+  const suggestion = toKebabCase(name);
+  return `Use kebab-case: lowercase words joined by dashes, starting with a letter${
+    suggestion ? ` (try "${suggestion}")` : ""
+  }`;
 }
 
 /** The default npm scope: the project name, so packages are "@<name>/api". */

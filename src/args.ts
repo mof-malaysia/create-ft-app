@@ -17,7 +17,7 @@ Scaffold a Turborepo project with the team's Node and SPA stack.
 
 Options
   --stack <${STACKS.join("|")}>      Template stack (default: ${DEFAULTS.stack}; go is planned)
-  --name <name>          Project name (defaults to the folder name)
+  --name <name>          Project name in kebab-case (defaults to the folder name)
   --include <parts>      Comma-separated: ${PARTS.join(", ")}
   --db <${DATABASES.join("|")}>   Database for the api (default: ${DEFAULTS.database})
   --scope <@scope>       npm scope for workspace packages (default: @<name>)

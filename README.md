@@ -22,7 +22,7 @@ Always included: pnpm catalogs (one version per dependency), Turborepo tasks, ox
 
 Optional: Postgres for the api (Kysely + pg, migrations on boot, `docker-compose.yml` for local dev), a Dockerfile (api + SPA in one image, or nginx for a SPA alone), git with a first commit and a pre-commit hook (lefthook) that formats with oxfmt and runs lint, type checks and tests, and the [fiscal-cr](https://github.com/mof-malaysia/fiscal-cr) code review workflow for pull requests (opt-in). Generated projects have no CI workflow: the pre-commit hook is the gate.
 
-Workspace packages are named after the project: `my-app` gets `@my-app/web`, `@my-app/api` and so on.
+Project names are kebab-case (lowercase words joined by dashes, starting with a letter), and workspace packages are named after the project: `my-app` gets `@my-app/web`, `@my-app/api` and so on.
 
 ## Options
 
@@ -30,7 +30,7 @@ Workspace packages are named after the project: `my-app` gets `@my-app/web`, `@m
 create-ft-app [dir] [options]
 
   --stack <node|go>      Template stack (default: node; go is planned)
-  --name <name>          Project name (defaults to the folder name)
+  --name <name>          Project name in kebab-case (defaults to the folder name)
   --include <parts>      Comma-separated: web, api, contracts, oxlint-config, typescript-config
   --db <postgres|none>   Database for the api (default: postgres)
   --scope <@scope>       npm scope for workspace packages (default: @<name>)

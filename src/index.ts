@@ -10,6 +10,7 @@ import {
   PARTS,
   defaultScope,
   flagsFor,
+  toKebabCase,
   validateName,
   validateScope,
   type Database,
@@ -50,13 +51,15 @@ const isEmptyDir = (dir: string) =>
 
 async function gather(args: Args, interactive: boolean): Promise<Options> {
   let name = args.name ?? (args.dir ? basename(resolve(args.dir)) : undefined);
-  if (!name || (interactive && !args.name && !args.dir)) {
+  const invalid = name !== undefined && validateName(name) !== undefined;
+  if (!name || (interactive && ((!args.name && !args.dir) || invalid))) {
     if (!interactive) throw new Error("Pass a folder or --name");
     name = unwrap(
       await p.text({
-        message: "Project name",
+        message: invalid ? `"${name}" isn't kebab-case. Project name` : "Project name",
         placeholder: "my-app",
-        defaultValue: name,
+        // Offer the kebab-case version of a folder name that doesn't fit.
+        initialValue: invalid ? toKebabCase(name!) : undefined,
         validate: validateName,
       }),
     );

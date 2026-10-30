@@ -1542,13 +1542,14 @@ function flagsFor(o) {
     git: o.git
   };
 }
-var NAME = /^[a-z0-9][a-z0-9._-]*$/;
+var NAME = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
+var toKebabCase = (text2) => text2.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^[^a-z]+|-+$/g, "");
 function validateName(name) {
   if (!name) return "Enter a project name";
-  if (!NAME.test(name))
-    return "Use lowercase letters, numbers, dots, dashes or underscores (a valid npm package name)";
   if (name.length > 214) return "Keep the name under 214 characters";
-  return void 0;
+  if (NAME.test(name)) return void 0;
+  const suggestion = toKebabCase(name);
+  return `Use kebab-case: lowercase words joined by dashes, starting with a letter${suggestion ? ` (try "${suggestion}")` : ""}`;
 }
 var defaultScope = (name) => `@${name}`;
 function validateScope(scope) {
@@ -1562,7 +1563,7 @@ Scaffold a Turborepo project with the team's Node and SPA stack.
 
 Options
   --stack <${STACKS.join("|")}>      Template stack (default: ${DEFAULTS.stack}; go is planned)
-  --name <name>          Project name (defaults to the folder name)
+  --name <name>          Project name in kebab-case (defaults to the folder name)
   --include <parts>      Comma-separated: ${PARTS.join(", ")}
   --db <${DATABASES.join("|")}>   Database for the api (default: ${DEFAULTS.database})
   --scope <@scope>       npm scope for workspace packages (default: @<name>)
@@ -2017,13 +2018,15 @@ function display(dir) {
 var isEmptyDir = (dir) => !existsSync(dir) || readdirSync2(dir).every((f) => f === ".git" || f === ".DS_Store");
 async function gather(args, interactive) {
   let name = args.name ?? (args.dir ? basename2(resolve(args.dir)) : void 0);
-  if (!name || interactive && !args.name && !args.dir) {
+  const invalid = name !== void 0 && validateName(name) !== void 0;
+  if (!name || interactive && (!args.name && !args.dir || invalid)) {
     if (!interactive) throw new Error("Pass a folder or --name");
     name = unwrap(
       await text({
-        message: "Project name",
+        message: invalid ? `"${name}" isn't kebab-case. Project name` : "Project name",
         placeholder: "my-app",
-        defaultValue: name,
+        // Offer the kebab-case version of a folder name that doesn't fit.
+        initialValue: invalid ? toKebabCase(name) : void 0,
         validate: validateName
       })
     );
