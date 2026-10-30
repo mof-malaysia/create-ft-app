@@ -1577,8 +1577,8 @@ Options
   -v, --version          Show the CLI version
 
 Examples
-  pnpm dlx github:yourorg/create-ft-app#semver:^0
-  pnpm dlx github:yourorg/create-ft-app my-app --include web,api,contracts -y
+  pnpm dlx github:mof-malaysia/create-ft-app#semver:^0
+  pnpm dlx github:mof-malaysia/create-ft-app my-app --include web,api,contracts -y
 `;
 function oneOf(flag, value, allowed) {
   if (value === void 0 || allowed.includes(value)) return value;

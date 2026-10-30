@@ -3,10 +3,10 @@
 Scaffolds a Turborepo monorepo with the team's Node and SPA stack. It asks a few questions, writes the project, installs it, adds FTDS components, formats it, builds it and makes the first commit.
 
 ```sh
-pnpm dlx github:yourorg/create-ft-app#semver:^0
+pnpm dlx github:mof-malaysia/create-ft-app#semver:^0
 ```
 
-`#semver:^0` runs the newest `v0.x.x` release tag. Pin an exact tag (`#v0.1.0`) for a repeatable run. If your machine can't reach the private repo over HTTPS, use SSH: `pnpm dlx "git+ssh://git@github.com/yourorg/create-ft-app.git#semver:^0"`.
+`#semver:^0` runs the newest `v0.x.x` release tag. Pin an exact tag (`#v0.1.0`) for a repeatable run. If your machine can't reach the private repo over HTTPS, use SSH: `pnpm dlx "git+ssh://git@github.com/mof-malaysia/create-ft-app.git#semver:^0"`.
 
 ## What you get
 

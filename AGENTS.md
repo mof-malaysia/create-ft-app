@@ -1,6 +1,6 @@
 # Working on create-ft-app
 
-A CLI that scaffolds Turborepo projects. Teammates run it with `pnpm dlx github:yourorg/create-ft-app#semver:^0`, so **the committed `dist/index.mjs` is what runs**: there is no build step on their machine.
+A CLI that scaffolds Turborepo projects. Teammates run it with `pnpm dlx github:mof-malaysia/create-ft-app#semver:^0`, so **the committed `dist/index.mjs` is what runs**: there is no build step on their machine.
 
 ## Layout
 
