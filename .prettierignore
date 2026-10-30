@@ -1,0 +1,4 @@
+dist
+pnpm-lock.yaml
+# Templates are only valid once rendered; the generated project is formatted then.
+templates

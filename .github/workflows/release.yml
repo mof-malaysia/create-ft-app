@@ -1,0 +1,22 @@
+name: Release
+
+# Pushing a tag such as v0.2.0 is the release: `#semver:^0` picks it up.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Tag matches package.json
+        run: |
+          version=$(node -p "require('./package.json').version")
+          [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "::error::package.json is $version, tag is $GITHUB_REF_NAME"; exit 1; }
+      - run: gh release create "$GITHUB_REF_NAME" --generate-notes --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}

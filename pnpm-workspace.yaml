@@ -1,0 +1,3 @@
+# Not a workspace: this file only holds pnpm settings for the CLI repo.
+allowBuilds:
+  esbuild: true

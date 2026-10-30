@@ -1,0 +1,9 @@
+{
+  "extends": "{{scope}}/typescript-config/react.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "test", "rsbuild.config.ts", "rstest.config.ts"]
+}

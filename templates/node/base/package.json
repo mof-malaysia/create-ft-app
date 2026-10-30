@@ -1,0 +1,34 @@
+{
+  "name": "{{name}}",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "check-types": "turbo run check-types",
+    "test": "turbo run test",
+    "verify": "turbo run lint check-types test build",
+    // @if git
+    "prepare": "lefthook install || echo \"Skipped git hooks: no git repository\"",
+    // @endif
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    // @if git
+    "lefthook": "catalog:",
+    // @endif
+    "prettier": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@{{pnpmVersion}}",
+  "engines": {
+    "node": ">={{nodeMajor}}"
+  },
+  "createFtApp": {
+    "version": "{{cliVersion}}"
+  }
+}

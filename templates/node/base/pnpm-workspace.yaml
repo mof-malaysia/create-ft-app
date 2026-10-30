@@ -1,0 +1,18 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Every third-party version lives here once; package.json files say "catalog:".
+# Renovate updates this file.
+catalog:
+  __CATALOG__
+
+# pnpm runs no dependency install scripts unless they are listed here.
+allowBuilds:
+  esbuild: true
+  # @if web
+  "@tailwindcss/oxide": true
+  # @endif
+  # @if git
+  lefthook: false
+  # @endif

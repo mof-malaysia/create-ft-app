@@ -1,0 +1,7 @@
+# Installed by `pnpm install` (the root "prepare" script).
+pre-commit:
+  jobs:
+    - name: format
+      glob: "*.{ts,tsx,js,mjs,cjs,json,jsonc,md,css,yml,yaml}"
+      run: pnpm exec prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true

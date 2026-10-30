@@ -1,0 +1,32 @@
+{
+  "name": "{{scope}}/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint"
+  },
+  "dependencies": {
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    // @if tsconfig
+    "{{scope}}/typescript-config": "workspace:*",
+    // @endif
+    // @if oxlint
+    "{{scope}}/oxlint-config": "workspace:*",
+    // @endif
+    "oxlint": "catalog:",
+    "typescript": "catalog:"
+  }
+}

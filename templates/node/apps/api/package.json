@@ -1,0 +1,49 @@
+{
+  "name": "{{scope}}/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "start": "node dist/index.js",
+    "check-types": "tsc --noEmit",
+    "lint": "oxlint",
+    "test": "rstest run"
+  },
+  "dependencies": {
+    // @if contracts
+    "{{scope}}/contracts": "workspace:*",
+    // @endif
+    "@fastify/cors": "catalog:",
+    // @if web
+    "@fastify/static": "catalog:",
+    // @endif
+    "@fastify/swagger": "catalog:",
+    "@scalar/fastify-api-reference": "catalog:",
+    "@valibot/to-json-schema": "catalog:",
+    "fastify": "catalog:",
+    // @if postgres
+    "kysely": "catalog:",
+    "pg": "catalog:",
+    // @endif
+    "valibot": "catalog:"
+  },
+  "devDependencies": {
+    // @if oxlint
+    "{{scope}}/oxlint-config": "workspace:*",
+    // @endif
+    // @if tsconfig
+    "{{scope}}/typescript-config": "workspace:*",
+    // @endif
+    "@rstest/core": "catalog:",
+    "@types/node": "catalog:",
+    // @if postgres
+    "@types/pg": "catalog:",
+    // @endif
+    "oxlint": "catalog:",
+    "pino-pretty": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

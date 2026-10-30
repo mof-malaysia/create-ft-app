@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm check-types
+      - run: pnpm test
+      # dist/ is committed because `pnpm dlx github:…` runs it as is.
+      - name: dist/ matches src/
+        run: |
+          pnpm build
+          git diff --exit-code -- dist || (echo "::error::Run 'pnpm build' and commit dist/"; exit 1)
+
+  scaffold:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Scaffolds real projects from the committed bundle and builds them.
+      - run: pnpm test:scaffold
+        env:
+          CLI: dist/index.mjs
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
