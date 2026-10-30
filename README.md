@@ -6,7 +6,7 @@ Scaffolds a Turborepo monorepo with the team's Node and SPA stack. It asks a few
 pnpm dlx github:mof-malaysia/create-ft-app#semver:^0
 ```
 
-`#semver:^0` runs the newest `v0.x.x` release tag. Pin an exact tag (`#v0.1.0`) for a repeatable run. If your machine can't reach the private repo over HTTPS, use SSH: `pnpm dlx "git+ssh://git@github.com/mof-malaysia/create-ft-app.git#semver:^0"`.
+`#semver:^0` runs the newest `v0.x.x` release tag. Pin an exact tag (`#v0.1.0`) for a repeatable run.
 
 ## What you get
 
