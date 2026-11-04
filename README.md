@@ -60,11 +60,11 @@ Either way the project gets a pnpm catalog and a Renovate config, so it keeps up
 pnpm install
 pnpm dev -- /tmp/try-it          # run from source
 pnpm test                        # template engine + every part combination, in memory
-pnpm test:scaffold               # real scaffolds with install and build (slow, needs network)
-pnpm build                       # bundle to dist/index.mjs, which is committed
+pnpm check                       # type checks, and bundle to dist/index.mjs (committed)
+pnpm verify                      # tests, plus real scaffolds with install and build (slow, needs network)
 ```
 
-There is no CI workflow. `pnpm install` sets up a pre-commit hook (lefthook) that formats staged files, runs the type checks and both test suites, and rebuilds `dist/` into the commit. Commits that only touch docs skip everything but the formatting.
+There is no CI workflow: `pnpm install` sets up git hooks that run `pnpm check` before each commit and `pnpm verify` before each push.
 
 See [AGENTS.md](AGENTS.md) for how the templates work.
 

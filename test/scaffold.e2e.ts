@@ -1,7 +1,8 @@
 /**
  * The slow test: scaffolds real projects with install and verify (lint,
  * check-types, test, build), the way a teammate would run the CLI. Needs
- * network. Run with `pnpm test:scaffold`; the pre-commit hook runs it (lefthook.yml).
+ * network. It runs the built dist/index.mjs, what teammates get: run it with
+ * `pnpm verify` (which builds first), or set CLI=src/index.ts to run the source.
  */
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
@@ -12,7 +13,7 @@ import { describe, it } from "node:test";
 import { promisify } from "node:util";
 
 const exec = promisify(execFile);
-const CLI = process.env.CLI ?? join(import.meta.dirname, "../src/index.ts");
+const CLI = process.env.CLI ?? join(import.meta.dirname, "../dist/index.mjs");
 const [cmd, ...pre] = CLI.endsWith(".ts") ? ["tsx", CLI] : ["node", CLI];
 
 const cases: { name: string; args: string[]; expect: (dir: string) => void }[] = [

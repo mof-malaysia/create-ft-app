@@ -1,0 +1,23 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  // The scaffold test runs pnpm, git and the network like a teammate would,
+  // so it gets the whole environment.
+  "envMode": "loose",
+  "tasks": {
+    "check-types": {
+      "inputs": ["src/**", "test/**", "catalog.json", "package.json", "tsconfig.json"]
+    },
+    "test": {
+      "inputs": ["src/**", "test/**", "templates/**", "catalog.json", "package.json"]
+    },
+    "build": {
+      "inputs": ["src/**", "catalog.json", "package.json", "pnpm-lock.yaml"],
+      "outputs": ["dist/**"]
+    },
+    // Runs the built bundle; its hash includes build's.
+    "test:scaffold": {
+      "dependsOn": ["build"],
+      "inputs": ["templates/**", "test/scaffold.e2e.ts", "catalog.json"]
+    }
+  }
+}

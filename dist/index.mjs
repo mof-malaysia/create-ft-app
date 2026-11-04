@@ -1481,6 +1481,8 @@ var package_default = {
   ],
   type: "module",
   scripts: {
+    check: "turbo run check-types build",
+    verify: "turbo run test test:scaffold",
     build: `esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/index.mjs --banner:js="#!/usr/bin/env node
 import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" --log-level=warning`,
     dev: "tsx src/index.ts",
@@ -1497,6 +1499,7 @@ import { createRequire } from 'node:module'; const require = createRequire(impor
     lefthook: "^2.2.2",
     oxfmt: "^0.75.0",
     tsx: "^4.23.15",
+    turbo: "^2.11.10",
     typescript: "^7.0.2"
   },
   engines: {
