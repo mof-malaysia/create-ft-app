@@ -33,6 +33,8 @@ A CLI that scaffolds Turborepo projects. Teammates run it with `pnpm --config.dl
 
 ## Before calling a change done
 
+There is no CI. The pre-commit hook (`lefthook.yml`, installed by `pnpm install`) is the gate: it formats staged files, runs check-types, test, build (adding `dist/` to the commit) and test:scaffold. Don't skip it with `--no-verify`. To run the same checks by hand:
+
 ```sh
 pnpm check-types
 pnpm test

@@ -64,6 +64,8 @@ pnpm test:scaffold               # real scaffolds with install and build (slow, 
 pnpm build                       # bundle to dist/index.mjs, which is committed
 ```
 
+There is no CI workflow. `pnpm install` sets up a pre-commit hook (lefthook) that formats staged files, runs the type checks and both test suites, and rebuilds `dist/` into the commit. Commits that only touch docs skip everything but the formatting.
+
 See [AGENTS.md](AGENTS.md) for how the templates work.
 
 ## Releasing

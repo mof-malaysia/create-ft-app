@@ -1,0 +1,31 @@
+# The only gate: there is no CI workflow. `pnpm install` installs it (through
+# lefthook's postinstall). Runs in order and stops at the first failure.
+pre-commit:
+  piped: true
+  jobs:
+    - name: format
+      glob: "*.{ts,tsx,js,mjs,cjs,json,jsonc,md,css,yml,yaml}"
+      run: node_modules/.bin/oxfmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+
+    - name: check-types
+      glob: &code "{src/**,test/**,templates/**,catalog.json,package.json,tsconfig.json,pnpm-lock.yaml}"
+      run: pnpm check-types
+
+    - name: test
+      glob: *code
+      run: pnpm test
+
+    # dist/ is committed because `pnpm dlx github:…` runs it as is, so the
+    # hook rebuilds it and adds it to the commit.
+    - name: build
+      glob: "{src/**,catalog.json,package.json,pnpm-lock.yaml}"
+      run: pnpm build && git add dist/index.mjs
+
+    # Scaffolds real projects from the bundle and builds them (slow, needs
+    # network). Skipped for commits that only touch docs.
+    - name: scaffold
+      glob: *code
+      run: pnpm test:scaffold
+      env:
+        CLI: dist/index.mjs

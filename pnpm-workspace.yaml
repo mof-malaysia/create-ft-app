@@ -1,3 +1,6 @@
 # Not a workspace: this file only holds pnpm settings for the CLI repo.
 allowBuilds:
   esbuild: true
+  # Its postinstall runs `lefthook install`. A root "prepare" script would also
+  # run on teammates' `pnpm dlx github:…`, so the hooks are installed this way.
+  lefthook: true

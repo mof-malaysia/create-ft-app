@@ -1,7 +1,7 @@
 /**
  * The slow test: scaffolds real projects with install and verify (lint,
  * check-types, test, build), the way a teammate would run the CLI. Needs
- * network. Run with `pnpm test:scaffold`; CI runs it on every push.
+ * network. Run with `pnpm test:scaffold`; the pre-commit hook runs it (lefthook.yml).
  */
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
