@@ -1720,7 +1720,7 @@ var catalog_default = {
   $comment: "The tested version set. `--versions latest` resolves each entry from the registry instead.",
   node: "24",
   pnpm: "12.16.1",
-  ftds: "v0.1.1",
+  ftds: "v0.2.2",
   shadcn: "4.23.0",
   postgres: "18",
   packages: {
