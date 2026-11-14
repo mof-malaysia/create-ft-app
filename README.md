@@ -18,7 +18,7 @@ pnpm --config.dlx-cache-max-age=0 dlx github:mof-malaysia/create-ft-app#semver:^
 | `oxlint-config`     | Oxlint presets `base`, `node`, `react` (left out: each package inlines its config)              |
 | `typescript-config` | tsconfig presets `base`, `node`, `library`, `react` (left out: each package inlines its config) |
 
-Always included: pnpm catalogs (one version per dependency), Turborepo tasks, oxfmt, Rstest, `.nvmrc`, Renovate, VS Code settings, `AGENTS.md`/`CLAUDE.md` written for the parts you chose, and a `.claude/launch.json` for the dev server.
+Always included: pnpm catalogs (one version per dependency), Turborepo tasks, oxfmt, Rstest, `.nvmrc`, Renovate, VS Code settings, `AGENTS.md`/`CLAUDE.md` written for the parts you chose, a `.claude/launch.json` for the dev server, and a `ROADMAP.md` stub.
 
 Optional: Postgres for the api (Kysely + pg, migrations on boot, `docker-compose.yml` for local dev), a Dockerfile (api + SPA in one image, or nginx for a SPA alone), git with a first commit and a pre-commit hook (lefthook) that formats with oxfmt and runs lint, type checks and tests, and the [fiscal-cr](https://github.com/mof-malaysia/fiscal-cr) code review workflow for pull requests (opt-in). Generated projects have no CI workflow: the pre-commit hook is the gate.
 

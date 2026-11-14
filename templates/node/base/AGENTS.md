@@ -99,6 +99,10 @@ Start Postgres (`docker compose up -d db`) before the api's dev server.
 For anything that changes how the app is built or started, also run `docker build .`.
 <!-- @endif -->
 
+## Where work comes from
+
+Work comes from GitHub issues labelled `ready`; anything that needs a product decision gets `needs-decision`. `ROADMAP.md` is owned by the product owner: propose changes to it, don't make them.
+
 ## Stop and ask first
 
 Changes that break people or systems outside this repo:

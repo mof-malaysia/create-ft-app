@@ -74,6 +74,7 @@ describe("every combination renders cleanly", () => {
           const fullstack = parts.includes("web") && parts.includes("api");
           assert.equal(configurations[0].port, fullstack ? 3001 : 3000);
         }
+        assert.match(byPath.get("ROADMAP.md") ?? "", /^# demo-app roadmap$/m, "ROADMAP.md");
         assert.match(byPath.get(".gitignore")!, /^!\.claude\/launch\.json$/m);
       });
     }
