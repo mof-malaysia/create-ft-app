@@ -71,12 +71,15 @@ pnpm build                       # every package, into git-ignored dist/ folders
 - **The UI is built on [FTDS](https://mof-malaysia.github.io/ftds/llms.txt)** (Base UI, Tailwind v4), pinned to {{ftdsVersion}} in `apps/web/components.json`. Add a component with `pnpm dlx shadcn@latest add @ftds/<name>` from `apps/web`. Use FTDS before writing your own; build anything missing from FTDS tokens (`bg-bg-*`, `text-txt-*`, `border-otl-*`), never raw Tailwind colours or `dark:` overrides. Files under `src/components/ui`, `src/components/blocks`, `src/lib/ftds` and `styles/ftds.css` stay as the registry ships them (oxfmt and Oxlint skip them) so upgrades diff cleanly.
 - **UI text goes through `t()`** with a key in `src/i18n/messages/en.ts`; the type checker rejects missing keys.
 <!-- @endif -->
-- **Never commit** `.env` files (only `.env.example`) or `.claude/`. Stage paths explicitly rather than `git add -A`.
+- **Never commit** `.env` files (only `.env.example`) or personal Claude Code files (`.claude/settings.local.json`). The shared ones, `.claude/settings.json`, `launch.json`, `skills/`, `agents/` and `commands/`, are committed. Stage paths explicitly rather than `git add -A`.
+- **Commits** use Conventional Commits (`feat(web): …`, `fix(api): …`, `chore: …`), on a feature branch.
 
 ## Before calling a change done
 
 <!-- @if git -->
-The pre-commit hook formats staged files and runs `pnpm check` (lint, type checks, tests); it is the project's gate, so don't bypass it with `--no-verify`. Before handing work over, also build:
+The pre-commit hook (`lefthook.yml`) formats staged files and runs `pnpm check` (lint, type checks, tests). There is no CI and no pre-push hook, so that hook is the project's only gate: don't bypass it with `--no-verify`. Before handing work over, also build:
+<!-- @else -->
+There are no git hooks and no CI, so nothing runs these for you. Run them before every commit:
 <!-- @endif -->
 
 ```sh
@@ -85,8 +88,31 @@ pnpm verify                      # lint, check-types, test, build
 ```
 
 <!-- @if web -->
-For UI changes, also look at the result in a browser (`pnpm dev`).
+For UI changes, also look at the result in a browser (`pnpm dev`, or the preview configuration in `.claude/launch.json`): in light and dark mode, at phone width, and using only the keyboard.
+<!-- @endif -->
+<!-- @if postgres -->
+
+Start Postgres (`docker compose up -d db`) before the api's dev server.
 <!-- @endif -->
 <!-- @if docker -->
+
 For anything that changes how the app is built or started, also run `docker build .`.
+<!-- @endif -->
+
+## Stop and ask first
+
+Changes that break people or systems outside this repo:
+
+<!-- @if api -->
+- The api's public surface: a route, request or response shape, error code, or anything else in the OpenAPI document.
+- Environment variables: adding a required one, or renaming or removing one. Deployments set them.
+<!-- @endif -->
+<!-- @if postgres -->
+- Migrations that drop, rename or rewrite data.
+<!-- @endif -->
+- A new dependency, or a major version upgrade in the catalog.
+<!-- @if docker && api -->
+- How the app is built or deployed: the `Dockerfile`.
+<!-- @elif docker -->
+- How the app is built or deployed: the `Dockerfile` and `nginx.conf`.
 <!-- @endif -->

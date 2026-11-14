@@ -3,3 +3,11 @@ node_modules
 *.log
 # dist/ is committed on purpose: `pnpm dlx github:…` runs it without a build step.
 .turbo
+
+# Claude Code: share team config, keep personal files local
+.claude/*
+!.claude/settings.json
+!.claude/launch.json
+!.claude/skills/
+!.claude/agents/
+!.claude/commands/

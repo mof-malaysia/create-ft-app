@@ -1,0 +1,29 @@
+// @if web || api
+{
+  "version": "0.0.1",
+  "configurations": [
+    // @if fullstack
+    {
+      "name": "dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev", "--ui=stream"],
+      "port": 3001
+    }
+    // @elif api
+    {
+      "name": "api",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev", "--ui=stream"],
+      "port": 3000
+    }
+    // @elif web
+    {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev", "--ui=stream"],
+      "port": 3000
+    }
+    // @endif
+  ]
+}
+// @endif
