@@ -41,3 +41,37 @@ pnpm verify    # pre-push: test and test:scaffold, on the built bundle
 ```
 
 Both go through Turborepo, which replays any task whose inputs in `turbo.json` haven't changed. When a task starts reading a new file, add it there.
+
+Faster loops while working:
+
+```sh
+pnpm exec tsx --test test/render.test.ts       # one test file
+pnpm format                                    # oxfmt (templates/ is skipped: they only parse once rendered)
+CLI=src/index.ts KEEP=1 pnpm test:scaffold     # the e2e scaffolds from source, keeping the output folders
+```
+
+### Verifying a template change
+
+The in-memory tests only prove a template renders. To prove it works, scaffold a real project from source into a temp folder and let the CLI run its own post-steps (install, FTDS, format, `pnpm verify`):
+
+```sh
+dir=$(mktemp -d)/demo-app
+pnpm dev "$dir" -y --include web,api,contracts --no-git   # pick the parts your change touches
+cd "$dir" && pnpm check                                       # the generated project's own gate
+```
+
+Check that the generated `AGENTS.md`, `CLAUDE.md` and `.claude/launch.json` read correctly for the parts you chose. For a change to the web or api templates, also start the scaffolded project's dev server (`pnpm dev`, or its `.claude/launch.json`) and look at it: light and dark mode, phone width, keyboard only. Delete the temp folder when you're done.
+
+## Git
+
+Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `ci:`, `chore:`), on a feature branch. Releases are `chore: release x.y.z` (see README).
+
+## Stop and ask first
+
+This repo's additions to the general rules. Teammates and scripts depend on these:
+
+- The CLI's interface: a flag, prompt, default, or the order of questions.
+- The generated layout: file names, package names, root scripts or ports that existing projects or their tooling rely on.
+- A new dependency in generated projects (a `catalog.json` entry), or a major version bump in the tested set.
+- The rules written into the generated `AGENTS.md`: they are the product's conventions.
+- Releases: bumping `version`, tagging, pushing tags.
