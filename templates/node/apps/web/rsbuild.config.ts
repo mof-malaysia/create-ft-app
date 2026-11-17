@@ -19,8 +19,12 @@ export default defineConfig({
     port: 3001,
     proxy: [
       {
-        context: ["/v1", "/healthz", "/docs", "/openapi.json"],
-        target: "http://localhost:3000",
+        // Rsbuild 2 takes http-proxy-middleware v3 options: an unknown key
+        // such as `context` is ignored and every request gets proxied.
+        pathFilter: ["/v1", "/healthz", "/docs", "/openapi.json"],
+        // The api listens on 127.0.0.1 (HOST in src/env.ts). "localhost" can
+        // resolve to ::1 first and reach another server on [::1]:3000.
+        target: "http://127.0.0.1:3000",
       },
     ],
   },
