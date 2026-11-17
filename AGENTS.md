@@ -62,6 +62,8 @@ cd "$dir" && pnpm check                                       # the generated pr
 
 Check that the generated `AGENTS.md`, `CLAUDE.md` and `.claude/launch.json` read correctly for the parts you chose. For a change to the web or api templates, also start the scaffolded project's dev server (`pnpm dev`, or its `.claude/launch.json`) and look at it: light and dark mode, phone width, keyboard only. Delete the temp folder when you're done.
 
+For a change to `.claude/launch.json` or a dev port, start the config the way Claude Code does: open the scaffolded project in Claude Code and run `preview_start` with the config's name (or run its `runtimeExecutable` and `runtimeArgs` in the project root), then check the server answers on the config's `port`, with that port already taken too: the dev server should fail, not move to another port the preview won't find.
+
 ## Git
 
 Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `ci:`, `chore:`), on a feature branch. Releases are `chore: release x.y.z` (see README).
