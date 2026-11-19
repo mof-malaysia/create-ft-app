@@ -1468,7 +1468,7 @@ ${i2}
 // package.json
 var package_default = {
   name: "create-ft-app",
-  version: "0.1.3",
+  version: "0.1.4",
   private: true,
   description: "Scaffold a Turborepo project with the team's Node and SPA stack",
   bin: {
