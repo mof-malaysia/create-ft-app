@@ -62,6 +62,8 @@ cd "$dir" && pnpm check                                       # the generated pr
 
 Check that the generated `AGENTS.md`, `CLAUDE.md` and `.claude/launch.json` read correctly for the parts you chose. For a change to the web or api templates, also start the scaffolded project's dev server (`pnpm dev`, or its `.claude/launch.json`) and look at it: light and dark mode, phone width, keyboard only. Delete the temp folder when you're done.
 
+For a change to `.claude/launch.json` or a dev port, start the config the way Claude Code does: open the scaffolded project in Claude Code and run `preview_start` with the config's name (or run its `runtimeExecutable` and `runtimeArgs` in the project root), then check the server answers on the config's `port`, with that port already taken too: the dev server should fail, not move to another port the preview won't find.
+
 #### api and Postgres changes
 
 For a change to the api, the database code, `docker-compose.yml` or the web proxy, run the api against a real database. It needs Docker running.
@@ -75,7 +77,7 @@ docker compose up -d --wait db
 pnpm dev
 ```
 
-If something else already holds 5432, change the published port in `docker-compose.yml` and `DATABASE_URL` in `apps/api/.env` to match. If 3001 is taken, Rsbuild moves to the next free port: read it from the `web:dev` log.
+If something else already holds 5432, change the published port in `docker-compose.yml` and `DATABASE_URL` in `apps/api/.env` to match. If 3001 is taken, the web dev server fails (`strictPort`) rather than moving: free the port first.
 
 Then check, in a second terminal:
 

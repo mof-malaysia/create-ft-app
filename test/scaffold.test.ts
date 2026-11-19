@@ -73,6 +73,12 @@ describe("every combination renders cleanly", () => {
           assert.equal(configurations.length, 1);
           const fullstack = parts.includes("web") && parts.includes("api");
           assert.equal(configurations[0].port, fullstack ? 3001 : 3000);
+          // The web dev server must listen on exactly that port, not drift to a free one.
+          const rsbuild = byPath.get("apps/web/rsbuild.config.ts");
+          if (rsbuild) {
+            assert.match(rsbuild, new RegExp(`^\\s*port: ${configurations[0].port},$`, "m"));
+            assert.match(rsbuild, /^\s*strictPort: true,$/m);
+          }
         }
         assert.match(byPath.get("ROADMAP.md") ?? "", /^# demo-app roadmap$/m, "ROADMAP.md");
         assert.match(byPath.get(".gitignore")!, /^!\.claude\/launch\.json$/m);
