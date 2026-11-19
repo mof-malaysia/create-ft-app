@@ -11,7 +11,12 @@ if (existsSync(".env")) process.loadEnvFile(".env");
 const env = loadEnv();
 // @if postgres
 const db = createDb(env.DATABASE_URL);
-await migrate(db);
+await migrate(db).catch((error: unknown) => {
+  throw new Error(
+    "Could not migrate the database at DATABASE_URL. Is Postgres running? Locally: docker compose up -d db, then restart pnpm dev.",
+    { cause: error },
+  );
+});
 // @endif
 const app = await buildApp({
   env,

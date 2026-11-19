@@ -64,6 +64,33 @@ Check that the generated `AGENTS.md`, `CLAUDE.md` and `.claude/launch.json` read
 
 For a change to `.claude/launch.json` or a dev port, start the config the way Claude Code does: open the scaffolded project in Claude Code and run `preview_start` with the config's name (or run its `runtimeExecutable` and `runtimeArgs` in the project root), then check the server answers on the config's `port`, with that port already taken too: the dev server should fail, not move to another port the preview won't find.
 
+#### api and Postgres changes
+
+For a change to the api, the database code, `docker-compose.yml` or the web proxy, run the api against a real database. It needs Docker running.
+
+```sh
+dir=$(mktemp -d)/demo-app
+pnpm dev "$dir" -y --include web,api,contracts --db postgres --no-git
+cd "$dir"
+export COMPOSE_PROJECT_NAME=ftapp-check     # keeps clear of your other containers
+docker compose up -d --wait db
+pnpm dev
+```
+
+If something else already holds 5432, change the published port in `docker-compose.yml` and `DATABASE_URL` in `apps/api/.env` to match. If 3001 is taken, the web dev server fails (`strictPort`) rather than moving: free the port first.
+
+Then check, in a second terminal:
+
+- [ ] The api log ends in `Server listening at http://127.0.0.1:3000`, with no error. `docker compose exec db psql -U postgres -d demo-app -c 'select name from kysely_migration'` lists every migration.
+- [ ] `curl -i localhost:3001/healthz` returns 200 `{"ok":true}` through the web proxy. A 504 means the api isn't running: look at its log.
+- [ ] `curl -i localhost:3001/openapi.json` returns JSON, and http://localhost:3001/docs shows Scalar.
+- [ ] http://localhost:3001/ shows the web app (not a JSON 404 from the api), with "Api is up" and "Hello, FTDS!".
+- [ ] `docker compose stop db`: `/healthz` returns 503 `{"ok":false}` at once, and the api keeps running (it logs `postgres: idle connection lost`). `docker compose start db`: `/healthz` is back to 200.
+- [ ] Stop and restart `pnpm dev`: the api starts without re-running migrations (`kysely_migration` has the same rows).
+- [ ] With the db stopped, `pnpm dev` fails with `Could not migrate the database at DATABASE_URL`, and the proxy answers 504.
+
+Finish with `docker compose down -v` to remove the container and its volume, then delete the temp folder.
+
 ## Git
 
 Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `ci:`, `chore:`), on a feature branch. Releases are `chore: release x.y.z` (see README).
