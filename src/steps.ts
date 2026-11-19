@@ -4,6 +4,39 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { delimiter, join } from "node:path";
 
+/**
+ * Variables that point git at a particular repository (`git rev-parse
+ * --local-env-vars`). Git sets GIT_DIR for hooks run in a worktree, so when
+ * create-ft-app runs inside one (its own pre-push test, say), an inherited
+ * GIT_DIR would make the new project's `git init`, `add` and `commit` act on
+ * the outer repo. Git clears the same list when it enters a submodule.
+ */
+const GIT_REPO_VARS = [
+  "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+  "GIT_CONFIG",
+  "GIT_CONFIG_PARAMETERS",
+  "GIT_CONFIG_COUNT",
+  "GIT_OBJECT_DIRECTORY",
+  "GIT_DIR",
+  "GIT_WORK_TREE",
+  "GIT_IMPLICIT_WORK_TREE",
+  "GIT_GRAFT_FILE",
+  "GIT_INDEX_FILE",
+  "GIT_NO_REPLACE_OBJECTS",
+  "GIT_REPLACE_REF_BASE",
+  "GIT_PREFIX",
+  "GIT_INTERNAL_SUPER_PREFIX",
+  "GIT_SHALLOW_FILE",
+  "GIT_COMMON_DIR",
+];
+
+/** The env for a step in the new project: the parent's, minus GIT_REPO_VARS. */
+export function childEnv(base: NodeJS.ProcessEnv, extra?: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  const env = { ...base, ...extra };
+  for (const name of GIT_REPO_VARS) delete env[name];
+  return env;
+}
+
 /** Runs a command, capturing output; never throws on a non-zero exit. */
 export function run(
   cmd: string,
@@ -13,7 +46,7 @@ export function run(
   return new Promise((resolve) => {
     const child = spawn(cmd, args, {
       cwd: opts.cwd,
-      env: { ...process.env, ...opts.env },
+      env: childEnv(process.env, opts.env),
       shell: process.platform === "win32",
       stdio: ["ignore", "pipe", "pipe"],
     });

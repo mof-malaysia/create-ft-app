@@ -11,6 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
 import { promisify } from "node:util";
+import { childEnv } from "../src/steps.ts";
 
 const exec = promisify(execFile);
 const CLI = process.env.CLI ?? join(import.meta.dirname, "../dist/index.mjs");
@@ -64,8 +65,11 @@ describe("scaffold end to end", { concurrency: true }, () => {
       }
       c.expect(dir);
       if (c.args.includes("--latest")) {
+        // In the pre-push hook GIT_DIR names this repo: drop it, or this
+        // reads our log instead of the new project's.
         const { stdout } = await exec("git", ["log", "--oneline"], {
           cwd: dir,
+          env: childEnv(process.env),
         });
         assert.match(stdout, /chore: scaffold/);
       }
