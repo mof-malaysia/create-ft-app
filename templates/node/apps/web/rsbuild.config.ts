@@ -12,17 +12,24 @@ export default defineConfig({
     title: "{{title}}",
     tags: [{ tag: "script", head: true, append: false, children: themeScript }],
   },
-  // @if api
   server: {
+    // @if api
     // The api dev server owns :3000. Everything it serves is proxied, so the
     // browser sees one origin, as it does in the Docker image.
     port: 3001,
+    // @else
+    port: 3000,
+    // @endif
+    // .claude/launch.json and README.md name this port: fail if it's taken
+    // rather than move to the next free one.
+    strictPort: true,
+    // @if api
     proxy: [
       {
         context: ["/v1", "/healthz", "/docs", "/openapi.json"],
         target: "http://localhost:3000",
       },
     ],
+    // @endif
   },
-  // @endif
 });
