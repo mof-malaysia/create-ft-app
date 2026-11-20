@@ -78,12 +78,22 @@ Pull requests are reviewed by [fiscal-cr](https://github.com/mof-malaysia/fiscal
 
 ```sh
 docker build -t {{name}} .
-<!-- @if api -->
+<!-- @if api && postgres -->
+docker compose up -d db
+docker run -p 3000:3000 --env-file apps/api/.env \
+  --add-host=host.docker.internal:host-gateway \
+  -e DATABASE_URL=postgres://postgres:postgres@host.docker.internal:5432/{{name}} \
+  {{name}}
+<!-- @elif api -->
 docker run -p 3000:3000 --env-file apps/api/.env {{name}}
 <!-- @else -->
 docker run -p 8080:8080 {{name}}
 <!-- @endif -->
 ```
+<!-- @if api && postgres -->
+
+Inside the container `localhost` is the container itself, so the `DATABASE_URL` in `apps/api/.env` can't reach the compose db. `host.docker.internal` is your machine, where compose publishes the db on 5432; `--add-host` makes that name resolve on Linux too (Docker Desktop has it already). The api applies its migrations at boot.
+<!-- @endif -->
 <!-- @endif -->
 
 ---
