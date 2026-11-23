@@ -22,6 +22,10 @@ const cases: { name: string; args: string[]; expect: (dir: string) => void }[] =
     args: ["--include", "web", "--no-git"],
     expect: (dir) => {
       assert.ok(existsSync(join(dir, "apps/web/src/components/ui/button.tsx")), "FTDS installed");
+      assert.ok(
+        existsSync(join(dir, "apps/web/.claude/skills/ftds/SKILL.md")),
+        "FTDS skill installed",
+      );
       assert.ok(existsSync(join(dir, "nginx.conf")));
       assert.ok(!existsSync(join(dir, "packages")));
     },

@@ -9,6 +9,7 @@
     "apps/web/src/components/blocks",
     "apps/web/src/lib/ftds",
     "apps/web/styles/ftds.css",
+    "apps/web/.claude/skills/ftds*",
     // @endif
     "pnpm-lock.yaml"
   ]

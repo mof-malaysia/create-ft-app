@@ -1468,7 +1468,7 @@ ${i2}
 // package.json
 var package_default = {
   name: "create-ft-app",
-  version: "0.1.5",
+  version: "0.1.6",
   private: true,
   description: "Scaffold a Turborepo project with the team's Node and SPA stack",
   bin: {
@@ -1724,7 +1724,7 @@ var catalog_default = {
   $comment: "The tested version set. `--versions latest` resolves each entry from the registry instead.",
   node: "24",
   pnpm: "12.16.1",
-  ftds: "v0.2.7",
+  ftds: "v0.3.1",
   shadcn: "4.23.0",
   postgres: "18",
   packages: {
@@ -2002,7 +2002,15 @@ ${lastLines(res.output)}`);
   const bin = join3(dir, "node_modules", ".bin");
   return { dir, env: { PATH: `${bin}${delimiter}${process.env.PATH ?? ""}` } };
 }
-var FTDS_ITEMS = ["ftds-init", "button", "tag", "theme-switch", "skiplink"];
+var FTDS_ITEMS = [
+  "ftds-init",
+  "button",
+  "tag",
+  "theme-switch",
+  "skiplink",
+  "ftds-skill",
+  "ftds-explore-skill"
+];
 
 // src/index.ts
 function unwrap(value) {
