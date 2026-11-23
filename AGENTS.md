@@ -95,6 +95,8 @@ Finish with `docker compose down -v` to remove the container and its volume, the
 
 Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `ci:`, `chore:`), on a feature branch. Releases are `chore: release x.y.z` (see README).
 
+Every release bumps `version` in `package.json` first (patch for fixes, minor for features, major for breaking changes), then runs `pnpm build` so `dist/` carries it. Never tag a version that `package.json` doesn't already say, and never reuse an existing tag: check `git tag` for the latest one.
+
 ## Stop and ask first
 
 This repo's additions to the general rules. Teammates and scripts depend on these:
