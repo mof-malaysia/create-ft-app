@@ -11,6 +11,7 @@ A CLI that scaffolds Turborepo projects. Teammates run it with `pnpm --config.dl
 | `src/render.ts`                          | The template engine (`@if` blocks, `+flag` overlay folders, `{{vars}}`, `_dotfiles`)    |
 | `src/scaffold.ts`                        | Renders the chosen parts once, inlines presets, fills the pnpm catalog                  |
 | `src/versions.ts`                        | Tested vs latest version resolution                                                     |
+| `src/ftds.ts`                            | Downloads FTDS's agent skills from its registry, for `--ftds-skills`                    |
 | `catalog.json`                           | The tested version set                                                                  |
 | `templates/<stack>/base`                 | Root files of every project                                                             |
 | `templates/<stack>/apps/*`, `packages/*` | One folder per part                                                                     |
@@ -19,7 +20,7 @@ A CLI that scaffolds Turborepo projects. Teammates run it with `pnpm --config.dl
 
 ## Template rules
 
-- `// @if <expr>` … `// @elif <expr>` … `// @else` … `// @endif` on their own lines (also `#`, `<!-- -->`, `{/* */}`). Flags come from `flagsFor()`: `web`, `api`, `contracts`, `oxlint`, `tsconfig`, `postgres`, `fullstack`, `docker`, `codeReview`, `git`. An unknown flag is an error.
+- `// @if <expr>` … `// @elif <expr>` … `// @else` … `// @endif` on their own lines (also `#`, `<!-- -->`, `{/* */}`). Flags come from `flagsFor()`: `web`, `api`, `contracts`, `oxlint`, `tsconfig`, `postgres`, `fullstack`, `docker`, `codeReview`, `git`, `ftdsSkills`. An unknown flag is an error.
 - A folder named `+<expr>` merges into its parent when true. A file that renders empty is skipped.
 - A leading `_` becomes `.` (`_gitignore`), because packing drops some dotfiles.
 - JSON templates may end up with trailing commas when an `@if` drops the last entry; the scaffold strips them. Third-party dependencies are always `"catalog:"`, and every name must exist in `catalog.json` (`pnpm test` checks).

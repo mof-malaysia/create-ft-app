@@ -29,6 +29,7 @@ Options
   --[no-]code-review     fiscal-cr code review on pull requests (default: ${onOff(DEFAULTS.codeReview)})
   --[no-]git             git init, pre-commit checks and a first commit (default: ${onOff(DEFAULTS.git)})
   --[no-]install         Install, add FTDS, format and verify (default: ${onOff(DEFAULTS.install)})
+  --[no-]ftds-skills     FTDS agent skills in .claude/skills, with web (default: ${onOff(DEFAULTS.ftdsSkills)})
   -y, --yes              Accept defaults for anything not given as a flag
   -h, --help             Show this help
   -v, --version          Show the CLI version
@@ -50,6 +51,7 @@ export type Args = {
   codeReview?: boolean;
   git?: boolean;
   install?: boolean;
+  ftdsSkills?: boolean;
   yes: boolean;
   help: boolean;
   version: boolean;
@@ -82,6 +84,7 @@ export function parse(argv: string[]): Args {
       "code-review": { type: "boolean" },
       git: { type: "boolean" },
       install: { type: "boolean" },
+      "ftds-skills": { type: "boolean" },
       yes: { type: "boolean", short: "y" },
       help: { type: "boolean", short: "h" },
       version: { type: "boolean", short: "v" },
@@ -112,6 +115,7 @@ export function parse(argv: string[]): Args {
     codeReview: values["code-review"],
     git: values.git,
     install: values.install,
+    ftdsSkills: values["ftds-skills"],
     yes: values.yes ?? false,
     help: values.help ?? false,
     version: values.version ?? false,

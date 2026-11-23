@@ -58,13 +58,4 @@ export async function provisionPnpm(version: string) {
   return { dir, env: { PATH: `${bin}${delimiter}${process.env.PATH ?? ""}` } };
 }
 
-/** What the CLI adds from the FTDS registry: components, and the agent skills (into `apps/web/.claude/skills`). */
-export const FTDS_ITEMS = [
-  "ftds-init",
-  "button",
-  "tag",
-  "theme-switch",
-  "skiplink",
-  "ftds-skill",
-  "ftds-explore-skill",
-];
+export const FTDS_ITEMS = ["ftds-init", "button", "tag", "theme-switch", "skiplink"];

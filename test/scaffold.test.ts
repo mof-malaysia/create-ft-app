@@ -24,6 +24,7 @@ const base: Omit<Options, "parts"> = {
   codeReview: true,
   git: true,
   install: false,
+  ftdsSkills: true,
   versions: "tested",
 };
 

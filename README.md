@@ -10,13 +10,13 @@ pnpm --config.dlx-cache-max-age=0 dlx github:mof-malaysia/create-ft-app#semver:^
 
 ## What you get
 
-| Part                | What                                                                                                             |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `web`               | React 19 SPA: Rsbuild, TanStack Router + Query, ky, Tailwind v4, FTDS and its agent skills, typed `t()` messages |
-| `api`               | Fastify 5: Valibot validation, OpenAPI + Scalar at `/docs`, Pino, one error shape, `/healthz`                    |
-| `contracts`         | Valibot schemas shared by web and api; the api builds its OpenAPI document from them                             |
-| `oxlint-config`     | Oxlint presets `base`, `node`, `react` (left out: each package inlines its config)                               |
-| `typescript-config` | tsconfig presets `base`, `node`, `library`, `react` (left out: each package inlines its config)                  |
+| Part                | What                                                                                            |
+| ------------------- | ----------------------------------------------------------------------------------------------- |
+| `web`               | React 19 SPA: Rsbuild, TanStack Router + Query, ky, Tailwind v4, FTDS, typed `t()` messages     |
+| `api`               | Fastify 5: Valibot validation, OpenAPI + Scalar at `/docs`, Pino, one error shape, `/healthz`   |
+| `contracts`         | Valibot schemas shared by web and api; the api builds its OpenAPI document from them            |
+| `oxlint-config`     | Oxlint presets `base`, `node`, `react` (left out: each package inlines its config)              |
+| `typescript-config` | tsconfig presets `base`, `node`, `library`, `react` (left out: each package inlines its config) |
 
 Always included: pnpm catalogs (one version per dependency), Turborepo tasks, oxfmt, Rstest, `.nvmrc`, Renovate, VS Code settings, `AGENTS.md`/`CLAUDE.md` written for the parts you chose, a `.claude/launch.json` for the dev server, and a `ROADMAP.md` stub.
 
@@ -40,6 +40,7 @@ create-ft-app [dir] [options]
   --[no-]code-review     fiscal-cr code review on pull requests (default: off)
   --[no-]git             git init, pre-commit checks and a first commit (default: on)
   --[no-]install         Install, add FTDS, format and verify (default: on)
+  --[no-]ftds-skills     FTDS agent skills in .claude/skills, with web (default: off)
   -y, --yes              Accept defaults for anything not given as a flag
 ```
 

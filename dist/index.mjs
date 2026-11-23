@@ -1531,7 +1531,8 @@ var DEFAULTS = {
   docker: true,
   git: true,
   codeReview: false,
-  install: true
+  install: true,
+  ftdsSkills: false
 };
 function flagsFor(o) {
   const has = (p) => o.parts.includes(p);
@@ -1547,7 +1548,8 @@ function flagsFor(o) {
     fullstack: web && api,
     docker: o.docker && (web || api),
     codeReview: o.codeReview,
-    git: o.git
+    git: o.git,
+    ftdsSkills: web && o.ftdsSkills
   };
 }
 var NAME = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
@@ -1582,6 +1584,7 @@ Options
   --[no-]code-review     fiscal-cr code review on pull requests (default: ${onOff(DEFAULTS.codeReview)})
   --[no-]git             git init, pre-commit checks and a first commit (default: ${onOff(DEFAULTS.git)})
   --[no-]install         Install, add FTDS, format and verify (default: ${onOff(DEFAULTS.install)})
+  --[no-]ftds-skills     FTDS agent skills in .claude/skills, with web (default: ${onOff(DEFAULTS.ftdsSkills)})
   -y, --yes              Accept defaults for anything not given as a flag
   -h, --help             Show this help
   -v, --version          Show the CLI version
@@ -1611,6 +1614,7 @@ function parse(argv) {
       "code-review": { type: "boolean" },
       git: { type: "boolean" },
       install: { type: "boolean" },
+      "ftds-skills": { type: "boolean" },
       yes: { type: "boolean", short: "y" },
       help: { type: "boolean", short: "h" },
       version: { type: "boolean", short: "v" }
@@ -1635,6 +1639,7 @@ function parse(argv) {
     codeReview: values["code-review"],
     git: values.git,
     install: values.install,
+    ftdsSkills: values["ftds-skills"],
     yes: values.yes ?? false,
     help: values.help ?? false,
     version: values.version ?? false
@@ -1645,79 +1650,6 @@ function parse(argv) {
 import { mkdirSync, readFileSync as readFileSync2, writeFileSync } from "node:fs";
 import { basename, dirname, join as join2 } from "node:path";
 import { fileURLToPath } from "node:url";
-
-// src/render.ts
-import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-var DIRECTIVE = /^\s*(?:\/\/|#|<!--|\/\*|\{\/\*)?\s*@(if|elif|else|endif)\b(.*?)(?:-->|\*\/\}|\*\/)?\s*$/;
-function evaluate(expr, flags) {
-  const source = expr.trim();
-  if (!source) throw new Error("Empty template condition");
-  return source.split("||").some(
-    (any) => any.split("&&").every((term) => {
-      const t2 = term.trim();
-      const negate = t2.startsWith("!");
-      const name = negate ? t2.slice(1).trim() : t2;
-      if (!(name in flags)) throw new Error(`Unknown template flag "${name}"`);
-      return negate ? !flags[name] : Boolean(flags[name]);
-    })
-  );
-}
-function renderText(text2, flags, vars, file = "template") {
-  const out = [];
-  const stack = [];
-  const on = () => stack.at(-1)?.on ?? true;
-  text2.split("\n").forEach((line, i2) => {
-    const m2 = DIRECTIVE.exec(line);
-    if (!m2) {
-      if (on()) out.push(line);
-      return;
-    }
-    const [, kind, rest = ""] = m2;
-    const where = `${file}:${i2 + 1}`;
-    if (kind === "if") {
-      const parentOn = on();
-      const value = parentOn && evaluate(rest, flags);
-      stack.push({ parentOn, matched: value, on: value });
-    } else if (kind === "elif" || kind === "else") {
-      const top = stack.at(-1);
-      if (!top) throw new Error(`@${kind} without @if at ${where}`);
-      const value = top.parentOn && !top.matched && (kind === "else" || evaluate(rest, flags));
-      top.on = value;
-      top.matched ||= value;
-    } else {
-      if (!stack.pop()) throw new Error(`@endif without @if at ${where}`);
-    }
-  });
-  if (stack.length) throw new Error(`Unclosed @if in ${file}`);
-  return out.join("\n").replace(/(?<!\$)\{\{\s*(\w+)\s*\}\}/g, (match, key) => {
-    const value = vars[key];
-    if (value === void 0) throw new Error(`Unknown template variable ${match} in ${file}`);
-    return value;
-  });
-}
-function renderFile(src, dest, flags, vars) {
-  const content = renderText(readFileSync(src, "utf8"), flags, vars, src);
-  return content.trim() ? { path: dest, content } : void 0;
-}
-function renderDir(src, dest, flags, vars) {
-  const files = [];
-  for (const entry of readdirSync(src, { withFileTypes: true })) {
-    const from = join(src, entry.name);
-    if (entry.isDirectory() && entry.name.startsWith("+")) {
-      if (evaluate(entry.name.slice(1), flags)) files.push(...renderDir(from, dest, flags, vars));
-      continue;
-    }
-    const name = entry.name.startsWith("_") ? `.${entry.name.slice(1)}` : entry.name;
-    const to = dest ? `${dest}/${name}` : name;
-    if (entry.isDirectory()) files.push(...renderDir(from, to, flags, vars));
-    else {
-      const file = renderFile(from, to, flags, vars);
-      if (file) files.push(file);
-    }
-  }
-  return files;
-}
 
 // catalog.json
 var catalog_default = {
@@ -1839,6 +1771,100 @@ async function resolvePackages(mode, names, nodeMajor) {
   return { value: Object.fromEntries(entries), fallbacks };
 }
 
+// src/ftds.ts
+var FTDS_REGISTRY = "https://mof-malaysia.github.io/ftds/r";
+var SKILLS = ["ftds-skill", "ftds-explore-skill"];
+var TARGET = /^~\/(\.claude\/skills\/ftds[\w-]*\/[\w./-]+)$/;
+var itemUrl = (version, name) => `${FTDS_REGISTRY}/${version}/${name}.json`;
+var ftdsSkillsUrl = (version) => itemUrl(version, SKILLS.at(-1));
+function skillFiles(item) {
+  return item.files.map((f) => {
+    const path = TARGET.exec(f.target ?? "")?.[1];
+    if (!path || path.includes("..") || f.content === void 0)
+      throw new Error(`Unexpected FTDS skill file: ${f.target}`);
+    return { path, content: f.content };
+  });
+}
+async function fetchFtdsSkills(version) {
+  const items = await Promise.all(
+    SKILLS.map((name) => getJson(itemUrl(version, name)))
+  );
+  return items.flatMap(skillFiles);
+}
+
+// src/render.ts
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+var DIRECTIVE = /^\s*(?:\/\/|#|<!--|\/\*|\{\/\*)?\s*@(if|elif|else|endif)\b(.*?)(?:-->|\*\/\}|\*\/)?\s*$/;
+function evaluate(expr, flags) {
+  const source = expr.trim();
+  if (!source) throw new Error("Empty template condition");
+  return source.split("||").some(
+    (any) => any.split("&&").every((term) => {
+      const t2 = term.trim();
+      const negate = t2.startsWith("!");
+      const name = negate ? t2.slice(1).trim() : t2;
+      if (!(name in flags)) throw new Error(`Unknown template flag "${name}"`);
+      return negate ? !flags[name] : Boolean(flags[name]);
+    })
+  );
+}
+function renderText(text2, flags, vars, file = "template") {
+  const out = [];
+  const stack = [];
+  const on = () => stack.at(-1)?.on ?? true;
+  text2.split("\n").forEach((line, i2) => {
+    const m2 = DIRECTIVE.exec(line);
+    if (!m2) {
+      if (on()) out.push(line);
+      return;
+    }
+    const [, kind, rest = ""] = m2;
+    const where = `${file}:${i2 + 1}`;
+    if (kind === "if") {
+      const parentOn = on();
+      const value = parentOn && evaluate(rest, flags);
+      stack.push({ parentOn, matched: value, on: value });
+    } else if (kind === "elif" || kind === "else") {
+      const top = stack.at(-1);
+      if (!top) throw new Error(`@${kind} without @if at ${where}`);
+      const value = top.parentOn && !top.matched && (kind === "else" || evaluate(rest, flags));
+      top.on = value;
+      top.matched ||= value;
+    } else {
+      if (!stack.pop()) throw new Error(`@endif without @if at ${where}`);
+    }
+  });
+  if (stack.length) throw new Error(`Unclosed @if in ${file}`);
+  return out.join("\n").replace(/(?<!\$)\{\{\s*(\w+)\s*\}\}/g, (match, key) => {
+    const value = vars[key];
+    if (value === void 0) throw new Error(`Unknown template variable ${match} in ${file}`);
+    return value;
+  });
+}
+function renderFile(src, dest, flags, vars) {
+  const content = renderText(readFileSync(src, "utf8"), flags, vars, src);
+  return content.trim() ? { path: dest, content } : void 0;
+}
+function renderDir(src, dest, flags, vars) {
+  const files = [];
+  for (const entry of readdirSync(src, { withFileTypes: true })) {
+    const from = join(src, entry.name);
+    if (entry.isDirectory() && entry.name.startsWith("+")) {
+      if (evaluate(entry.name.slice(1), flags)) files.push(...renderDir(from, dest, flags, vars));
+      continue;
+    }
+    const name = entry.name.startsWith("_") ? `.${entry.name.slice(1)}` : entry.name;
+    const to = dest ? `${dest}/${name}` : name;
+    if (entry.isDirectory()) files.push(...renderDir(from, to, flags, vars));
+    else {
+      const file = renderFile(from, to, flags, vars);
+      if (file) files.push(file);
+    }
+  }
+  return files;
+}
+
 // src/scaffold.ts
 var TEMPLATES = fileURLToPath(new URL("../templates", import.meta.url));
 var ROOTS = {
@@ -1856,6 +1882,7 @@ function templateVars(o, t2, cliVersion) {
     nodeMajor: t2.node,
     pnpmVersion: t2.pnpm,
     ftdsVersion: t2.ftds,
+    ftdsRegistry: FTDS_REGISTRY,
     postgresVersion: POSTGRES_VERSION,
     cliVersion,
     parts: o.parts.join(", ")
@@ -2002,15 +2029,7 @@ ${lastLines(res.output)}`);
   const bin = join3(dir, "node_modules", ".bin");
   return { dir, env: { PATH: `${bin}${delimiter}${process.env.PATH ?? ""}` } };
 }
-var FTDS_ITEMS = [
-  "ftds-init",
-  "button",
-  "tag",
-  "theme-switch",
-  "skiplink",
-  "ftds-skill",
-  "ftds-explore-skill"
-];
+var FTDS_ITEMS = ["ftds-init", "button", "tag", "theme-switch", "skiplink"];
 
 // src/index.ts
 function unwrap(value) {
@@ -2104,9 +2123,15 @@ async function gather(args, interactive) {
       label: "Code review",
       hint: "fiscal-cr on pull requests; needs the org's ANTHROPIC_* variables"
     },
-    install: { label: "Install and verify", hint: "pnpm install, FTDS, format, build" }
+    install: { label: "Install and verify", hint: "pnpm install, FTDS, format, build" },
+    ftdsSkills: {
+      label: "FTDS agent skills",
+      hint: "ftds and /ftds-explore for Claude Code, in .claude/skills"
+    }
   };
-  const unasked = Object.keys(extraInfo).filter((k) => args[k] === void 0);
+  const unasked = Object.keys(extraInfo).filter(
+    (k) => args[k] === void 0 && (k !== "ftdsSkills" || parts.includes("web"))
+  );
   const byDefault = unasked.filter((k) => DEFAULTS[k]);
   const picked = interactive && unasked.length ? unwrap(
     await multiselect({
@@ -2149,6 +2174,7 @@ async function gather(args, interactive) {
     codeReview: extra("codeReview"),
     git: extra("git"),
     install: extra("install"),
+    ftdsSkills: extra("ftdsSkills"),
     versions
   };
 }
@@ -2169,10 +2195,14 @@ async function main() {
   const s = progress();
   s.start(o.versions === "latest" ? "Looking up the latest versions" : "Preparing");
   const toolchain = await resolveToolchain(o.versions);
+  const { node, pnpm, ftds, shadcn } = toolchain.value;
+  const skills = flags.ftdsSkills ? fetchFtdsSkills(ftds).catch(() => void 0) : void 0;
   const { files, catalog } = renderProject(o, toolchain.value, package_default.version);
   const packages = await resolvePackages(o.versions, catalog, toolchain.value.node);
   fillCatalog(files, packages.value);
-  const { node, pnpm, ftds, shadcn } = toolchain.value;
+  const skillFiles2 = await skills;
+  if (skillFiles2) files.push(...skillFiles2);
+  const skillsFailed = flags.ftdsSkills && !skillFiles2;
   s.stop(
     `${o.versions === "latest" ? "Resolved the latest versions" : "Using the tested versions"} (Node ${node}, pnpm ${pnpm}, FTDS ${ftds})`
   );
@@ -2180,6 +2210,10 @@ async function main() {
   if (fallbacks.length)
     log.warn(
       `Couldn't reach the registry for ${fallbacks.join(", ")}; used the tested versions.`
+    );
+  if (skillsFailed)
+    log.warn(
+      `Couldn't download the FTDS ${ftds} agent skills; the next steps say how to add them.`
     );
   writeProject(o.dir, files);
   for (const f of files)
@@ -2205,14 +2239,8 @@ async function main() {
   if (o.git) await step("git init", "git", ["init", "-b", "main"]);
   const local = localPnpm();
   const pnpmMismatch = !local || major(local) !== major(pnpm);
-  const ftdsArgs = [
-    "dlx",
-    `shadcn@${shadcn}`,
-    "add",
-    ...FTDS_ITEMS.map((i2) => `@ftds/${i2}`),
-    "--yes",
-    "--overwrite"
-  ];
+  const shadcnAdd = ["dlx", `shadcn@${shadcn}`, "add"];
+  const ftdsArgs = [...shadcnAdd, ...FTDS_ITEMS.map((i2) => `@ftds/${i2}`), "--yes", "--overwrite"];
   let tempPnpm;
   try {
     if (o.install) {
@@ -2258,6 +2286,7 @@ async function main() {
     next.push("pnpm install");
     if (flags.web) next.push(`(cd apps/web && pnpm ${ftdsArgs.join(" ")})`);
   }
+  if (skillsFailed) next.push(`pnpm ${shadcnAdd.join(" ")} ${ftdsSkillsUrl(ftds)}`);
   if (flags.postgres) next.push("docker compose up -d db");
   next.push("pnpm dev", "", "URLs and scripts are in README.md.");
   note(next.join("\n"), "Next steps");

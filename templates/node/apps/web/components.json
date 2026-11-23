@@ -19,6 +19,6 @@
     "hooks": "@/hooks"
   },
   "registries": {
-    "@ftds": "https://mof-malaysia.github.io/ftds/r/{{ftdsVersion}}/{name}.json"
+    "@ftds": "{{ftdsRegistry}}/{{ftdsVersion}}/{name}.json"
   }
 }

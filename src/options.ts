@@ -31,6 +31,7 @@ export const DEFAULTS = {
   git: true,
   codeReview: false,
   install: true,
+  ftdsSkills: false,
 } as const satisfies {
   stack: Stack;
   database: Database;
@@ -39,6 +40,7 @@ export const DEFAULTS = {
   git: boolean;
   codeReview: boolean;
   install: boolean;
+  ftdsSkills: boolean;
 };
 
 export type Options = {
@@ -55,6 +57,8 @@ export type Options = {
   codeReview: boolean;
   git: boolean;
   install: boolean;
+  /** FTDS's agent skills in .claude/skills; only with web. */
+  ftdsSkills: boolean;
   versions: VersionMode;
 };
 
@@ -76,6 +80,7 @@ export function flagsFor(o: Options): Flags {
     docker: o.docker && (web || api),
     codeReview: o.codeReview,
     git: o.git,
+    ftdsSkills: web && o.ftdsSkills,
   };
 }
 
