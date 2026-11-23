@@ -18,6 +18,7 @@ import {
   type VersionMode,
 } from "./options.ts";
 import { fillCatalog, renderProject, writeProject } from "./scaffold.ts";
+import { fetchFtdsSkills, ftdsSkillsUrl } from "./ftds.ts";
 import { FTDS_ITEMS, lastLines, localPnpm, provisionPnpm, run } from "./steps.ts";
 import { major, resolvePackages, resolveToolchain } from "./versions.ts";
 
@@ -124,7 +125,7 @@ async function gather(args: Args, interactive: boolean): Promise<Options> {
         )
       : DEFAULTS.database);
 
-  type Extra = "docker" | "codeReview" | "git" | "install";
+  type Extra = "docker" | "codeReview" | "git" | "install" | "ftdsSkills";
   const extraInfo: Record<Extra, { label: string; hint: string }> = {
     docker: { label: "Dockerfile", hint: "one image for the app" },
     git: { label: "git", hint: "init, pre-commit format/lint/type-check/test, first commit" },
@@ -133,8 +134,14 @@ async function gather(args: Args, interactive: boolean): Promise<Options> {
       hint: "fiscal-cr on pull requests; needs the org's ANTHROPIC_* variables",
     },
     install: { label: "Install and verify", hint: "pnpm install, FTDS, format, build" },
+    ftdsSkills: {
+      label: "FTDS agent skills",
+      hint: "ftds and /ftds-explore for Claude Code, in .claude/skills",
+    },
   };
-  const unasked = (Object.keys(extraInfo) as Extra[]).filter((k) => args[k] === undefined);
+  const unasked = (Object.keys(extraInfo) as Extra[]).filter(
+    (k) => args[k] === undefined && (k !== "ftdsSkills" || parts.includes("web")),
+  );
   const byDefault = unasked.filter((k) => DEFAULTS[k]);
   const picked: Extra[] =
     interactive && unasked.length
@@ -188,6 +195,7 @@ async function gather(args: Args, interactive: boolean): Promise<Options> {
     codeReview: extra("codeReview"),
     git: extra("git"),
     install: extra("install"),
+    ftdsSkills: extra("ftdsSkills"),
     versions,
   };
 }
@@ -213,10 +221,15 @@ async function main() {
   const s = progress();
   s.start(o.versions === "latest" ? "Looking up the latest versions" : "Preparing");
   const toolchain = await resolveToolchain(o.versions);
+  const { node, pnpm, ftds, shadcn } = toolchain.value;
+  // Downloads alongside the package lookups; undefined if it fails.
+  const skills = flags.ftdsSkills ? fetchFtdsSkills(ftds).catch(() => undefined) : undefined;
   const { files, catalog } = renderProject(o, toolchain.value, pkg.version);
   const packages = await resolvePackages(o.versions, catalog, toolchain.value.node);
   fillCatalog(files, packages.value);
-  const { node, pnpm, ftds, shadcn } = toolchain.value;
+  const skillFiles = await skills;
+  if (skillFiles) files.push(...skillFiles);
+  const skillsFailed = flags.ftdsSkills && !skillFiles;
   s.stop(
     `${o.versions === "latest" ? "Resolved the latest versions" : "Using the tested versions"} (Node ${node}, pnpm ${pnpm}, FTDS ${ftds})`,
   );
@@ -226,6 +239,10 @@ async function main() {
       `Couldn't reach the registry for ${fallbacks.join(", ")}; used the tested versions.`,
     );
 
+  if (skillsFailed)
+    p.log.warn(
+      `Couldn't download the FTDS ${ftds} agent skills; the next steps say how to add them.`,
+    );
   writeProject(o.dir, files);
   for (const f of files)
     if (f.path.endsWith(".env.example"))
@@ -258,14 +275,8 @@ async function main() {
 
   const local = localPnpm();
   const pnpmMismatch = !local || major(local) !== major(pnpm);
-  const ftdsArgs = [
-    "dlx",
-    `shadcn@${shadcn}`,
-    "add",
-    ...FTDS_ITEMS.map((i) => `@ftds/${i}`),
-    "--yes",
-    "--overwrite",
-  ];
+  const shadcnAdd = ["dlx", `shadcn@${shadcn}`, "add"];
+  const ftdsArgs = [...shadcnAdd, ...FTDS_ITEMS.map((i) => `@ftds/${i}`), "--yes", "--overwrite"];
 
   let tempPnpm: string | undefined;
   try {
@@ -314,6 +325,7 @@ async function main() {
     next.push("pnpm install");
     if (flags.web) next.push(`(cd apps/web && pnpm ${ftdsArgs.join(" ")})`);
   }
+  if (skillsFailed) next.push(`pnpm ${shadcnAdd.join(" ")} ${ftdsSkillsUrl(ftds)}`);
   if (flags.postgres) next.push("docker compose up -d db");
   next.push("pnpm dev", "", "URLs and scripts are in README.md.");
   p.note(next.join("\n"), "Next steps");

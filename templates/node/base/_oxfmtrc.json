@@ -10,6 +10,9 @@
     "apps/web/src/lib/ftds",
     "apps/web/styles/ftds.css",
     // @endif
+    // @if ftdsSkills
+    ".claude/skills/ftds*",
+    // @endif
     "pnpm-lock.yaml"
   ]
 }

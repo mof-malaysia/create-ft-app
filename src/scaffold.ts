@@ -2,6 +2,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { FTDS_REGISTRY } from "./ftds.ts";
 import { flagsFor, type Flags, type Options, type Part } from "./options.ts";
 import { renderDir, renderFile, type RenderedFile } from "./render.ts";
 import { POSTGRES_VERSION, type Packages, type Toolchain } from "./versions.ts";
@@ -30,6 +31,7 @@ function templateVars(o: Options, t: Toolchain, cliVersion: string) {
     nodeMajor: t.node,
     pnpmVersion: t.pnpm,
     ftdsVersion: t.ftds,
+    ftdsRegistry: FTDS_REGISTRY,
     postgresVersion: POSTGRES_VERSION,
     cliVersion,
     parts: o.parts.join(", "),

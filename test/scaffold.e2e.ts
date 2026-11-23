@@ -19,9 +19,11 @@ const [cmd, ...pre] = CLI.endsWith(".ts") ? ["tsx", CLI] : ["node", CLI];
 const cases: { name: string; args: string[]; expect: (dir: string) => void }[] = [
   {
     name: "web only, configs inlined",
-    args: ["--include", "web", "--no-git"],
+    args: ["--include", "web", "--ftds-skills", "--no-git"],
     expect: (dir) => {
       assert.ok(existsSync(join(dir, "apps/web/src/components/ui/button.tsx")), "FTDS installed");
+      assert.ok(existsSync(join(dir, ".claude/skills/ftds/SKILL.md")), "FTDS skill added");
+      assert.ok(existsSync(join(dir, ".claude/skills/ftds-explore/SKILL.md")));
       assert.ok(existsSync(join(dir, "nginx.conf")));
       assert.ok(!existsSync(join(dir, "packages")));
     },
@@ -32,6 +34,7 @@ const cases: { name: string; args: string[]; expect: (dir: string) => void }[] =
     expect: (dir) => {
       assert.ok(!existsSync(join(dir, "apps/api/src/db")));
       assert.ok(!existsSync(join(dir, "Dockerfile")));
+      assert.ok(!existsSync(join(dir, ".claude/skills")), "no FTDS skills without web");
     },
   },
   {

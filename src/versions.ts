@@ -29,7 +29,7 @@ export const major = (version: string) => version.replace(/^v/, "").split(".")[0
 
 const TIMEOUT = 10_000;
 
-async function getJson<T>(url: string, headers: Record<string, string> = {}) {
+export async function getJson<T>(url: string, headers: Record<string, string> = {}) {
   const res = await fetch(url, {
     headers: { accept: "application/json", ...headers },
     signal: AbortSignal.timeout(TIMEOUT),

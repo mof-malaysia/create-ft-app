@@ -40,6 +40,7 @@ create-ft-app [dir] [options]
   --[no-]code-review     fiscal-cr code review on pull requests (default: off)
   --[no-]git             git init, pre-commit checks and a first commit (default: on)
   --[no-]install         Install, add FTDS, format and verify (default: on)
+  --[no-]ftds-skills     FTDS agent skills in .claude/skills, with web (default: off)
   -y, --yes              Accept defaults for anything not given as a flag
 ```
 
