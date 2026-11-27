@@ -92,6 +92,40 @@ Then check, in a second terminal:
 
 Finish with `docker compose down -v` to remove the container and its volume, then delete the temp folder.
 
+#### Docker image
+
+For a change to the `Dockerfile`, `nginx.conf`, `.dockerignore`, the build scripts, or how the api starts or serves the SPA, build and run the image for each shape it touches. Keep the CLI's install step (no `--no-install`): the image builds from `pnpm-lock.yaml`. Tag the images so you can find and remove them.
+
+```sh
+base=$(mktemp -d)
+pnpm dev "$base/full-app" -y --include web,api,contracts --db postgres --no-git
+pnpm dev "$base/api-app" -y --include api --db none --no-git
+pnpm dev "$base/web-app" -y --include web --no-git
+(cd "$base/full-app" && docker build -t ftapp-check-full .)   # likewise api-app, web-app
+```
+
+For every shape:
+
+- [ ] `docker build` finishes. It sends a context of a few hundred kB (`.dockerignore` keeps out `node_modules`, `dist` and `.env`), and `pnpm fetch`, `pnpm install --offline` and `pnpm deploy` run with the pinned pnpm.
+
+Web, api and Postgres: start the db as in the section above, then run the `docker run` command from the generated `README.md`. It points `DATABASE_URL` at `host.docker.internal`, because `localhost` inside the container is the container. If you remapped the db port, use that port in `DATABASE_URL`; if 3000 is taken, publish another host port (`-p 3300:3000`) and use it below.
+
+- [ ] The log shows `Server listening`, and `kysely_migration` lists every migration.
+- [ ] `curl -i localhost:3000/healthz` returns 200 `{"ok":true}`, `/openapi.json` returns JSON, and http://localhost:3000/docs shows Scalar.
+- [ ] http://localhost:3000/ shows the web app with "Api is up". A deep link (`/some/page`) shows the app's "Page not found" page, not a JSON 404. `/static/js/*` files have `cache-control: public, max-age=31536000, immutable`; `/` has `no-cache`.
+- [ ] `docker exec <container> id` shows `node`, and `docker stop` logs `shutting down` and returns at once.
+
+api only (`--db none`): `docker run -p 3000:3000 --env-file apps/api/.env ftapp-check-api`.
+
+- [ ] `/healthz` returns 200 and `/docs` shows Scalar.
+
+Web only: `docker run -p 8080:8080 ftapp-check-web`.
+
+- [ ] http://localhost:8080/ shows the web app, and a deep link shows its "Page not found" page.
+- [ ] `curl -I` on a `/static/js/*` file shows one `Cache-Control: public, max-age=31536000, immutable`; `/` has `no-cache`. A missing `/static/` file is a 404, not `index.html`.
+
+Finish with `docker rm -f` on your containers, `docker rmi ftapp-check-full ftapp-check-api ftapp-check-web`, `docker compose down -v`, and delete the temp folder.
+
 ## Git
 
 Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `ci:`, `chore:`), on a feature branch. Releases are `chore: release x.y.z` (see README).

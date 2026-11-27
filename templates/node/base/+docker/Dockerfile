@@ -1,6 +1,15 @@
 # {{name}}: one image, built from the whole workspace.
 #   docker build -t {{name}} .
-# @if api
+# @if api && postgres
+#   docker run -p 3000:3000 --env-file apps/api/.env \
+#     --add-host=host.docker.internal:host-gateway \
+#     -e DATABASE_URL=postgres://postgres:postgres@host.docker.internal:5432/{{name}} \
+#     {{name}}
+# Inside the container `localhost` is the container itself, so DATABASE_URL
+# from .env can't reach the compose db. host.docker.internal is the host,
+# where compose publishes the db on 5432 (--add-host makes it resolve on
+# Linux too; Docker Desktop has it already). Applies the migrations at boot.
+# @elif api
 #   docker run -p 3000:3000 --env-file apps/api/.env {{name}}
 # @else
 #   docker run -p 8080:8080 {{name}}
